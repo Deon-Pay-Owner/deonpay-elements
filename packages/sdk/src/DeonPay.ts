@@ -138,7 +138,7 @@ export class DeonPay {
     tokenId: string,
     returnUrl?: string
   ): Promise<PaymentIntent> {
-    const url = `${this.config.apiUrl}/api/v1/payment_intents/${paymentIntentId}/confirm`
+    const url = `${this.config.apiUrl}/api/payment-intents/${paymentIntentId}/confirm`
 
     const response = await fetch(url, {
       method: 'POST',
