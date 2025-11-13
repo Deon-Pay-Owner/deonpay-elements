@@ -1,18 +1,42 @@
 {
   "name": "@deonpay/elements-core",
   "version": "0.1.0",
-  "description": "Core utilities for DeonPay Elements",
+  "description": "Core utilities for DeonPay Elements - Card validation, formatting, and brand detection",
   "main": "./dist/index.js",
   "module": "./dist/index.mjs",
   "types": "./dist/index.d.ts",
   "files": [
-    "dist"
+    "dist",
+    "README.md"
   ],
   "scripts": {
     "dev": "tsup --watch",
     "build": "tsup",
     "test": "vitest",
     "typecheck": "tsc --noEmit"
+  },
+  "keywords": [
+    "deonpay",
+    "payments",
+    "credit-card",
+    "validation",
+    "luhn",
+    "card-brands",
+    "formatting"
+  ],
+  "author": "DeonPay <support@deonpay.mx>",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Deon-Pay-Owner/deonpay-elements.git",
+    "directory": "packages/core"
+  },
+  "homepage": "https://elements.deonpay.mx",
+  "bugs": {
+    "url": "https://github.com/Deon-Pay-Owner/deonpay-elements/issues"
+  },
+  "publishConfig": {
+    "access": "public"
   },
   "devDependencies": {
     "@types/node": "^20.10.0",

@@ -1,12 +1,13 @@
 {
   "name": "@deonpay/elements-sdk",
   "version": "0.1.0",
-  "description": "DeonPay Elements SDK - Embeddable payment UI components",
+  "description": "DeonPay Elements SDK - Embeddable payment UI components with multi-acquirer routing",
   "main": "./dist/index.js",
   "module": "./dist/index.mjs",
   "types": "./dist/index.d.ts",
   "files": [
-    "dist"
+    "dist",
+    "README.md"
   ],
   "scripts": {
     "dev": "vite build --watch",
@@ -15,12 +16,38 @@
     "typecheck": "tsc --noEmit",
     "lint": "eslint src --ext ts,tsx --report-unused-disable-directives --max-warnings 0"
   },
+  "keywords": [
+    "deonpay",
+    "payments",
+    "elements",
+    "ui-components",
+    "react",
+    "payment-form",
+    "credit-card",
+    "tokenization",
+    "pci-dss",
+    "multi-acquirer"
+  ],
+  "author": "DeonPay <support@deonpay.mx>",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Deon-Pay-Owner/deonpay-elements.git",
+    "directory": "packages/sdk"
+  },
+  "homepage": "https://elements.deonpay.mx",
+  "bugs": {
+    "url": "https://github.com/Deon-Pay-Owner/deonpay-elements/issues"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
   "peerDependencies": {
     "react": "^18.0.0",
     "react-dom": "^18.0.0"
   },
   "dependencies": {
-    "@deonpay/elements-core": "workspace:*"
+    "@deonpay/elements-core": "^0.1.0"
   },
   "devDependencies": {
     "@types/react": "^18.2.45",
