@@ -48,7 +48,7 @@ export default function PlaygroundPage() {
         const DeonPay = DeonPayModule.default
 
         const deonpay = DeonPay('pk_test_demo_key', {
-          apiUrl: 'http://localhost:3001'
+          apiUrl: window.location.origin
         })
 
         const elements = deonpay.elements({
