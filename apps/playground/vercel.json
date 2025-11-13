@@ -1,0 +1,15 @@
+{
+  "buildCommand": "cd ../.. && pnpm build --filter=@deonpay/playground",
+  "outputDirectory": ".next",
+  "framework": "nextjs",
+  "env": {
+    "NEXT_PUBLIC_DEONPAY_API_URL": "https://api.deonpay.mx"
+  },
+  "regions": ["iad1"],
+  "rewrites": [
+    {
+      "source": "/api/:path*",
+      "destination": "/api/:path*"
+    }
+  ]
+}
