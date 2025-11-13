@@ -7,23 +7,10 @@ import { NextResponse } from 'next/server'
 import { createHash, randomBytes } from 'crypto'
 
 // Simple in-memory token storage (in production, use Cloudflare KV or Redis)
-const tokenStore = new Map<string, {
-  card: any
-  billing_details?: any
-  created_at: number
-  used: boolean
-}>()
-
-// Cleanup old tokens periodically
-setInterval(() => {
-  const now = Date.now()
-  for (const [tokenId, data] of tokenStore.entries()) {
-    // Remove tokens older than 15 minutes
-    if (now - data.created_at > 15 * 60 * 1000) {
-      tokenStore.delete(tokenId)
-    }
-  }
-}, 60 * 1000) // Run every minute
+// Using global to persist across requests in development
+if (!global.tokenStore) {
+  global.tokenStore = new Map()
+}
 
 export async function POST(request: Request) {
   try {
@@ -67,7 +54,7 @@ export async function POST(request: Request) {
     }
 
     // Store token temporarily
-    tokenStore.set(tokenId, {
+    global.tokenStore.set(tokenId, {
       card: encryptedCard,
       billing_details,
       created_at: Date.now(),
@@ -99,6 +86,3 @@ export async function POST(request: Request) {
     )
   }
 }
-
-// Export token store for other routes
-export { tokenStore }

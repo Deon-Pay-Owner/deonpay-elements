@@ -12,7 +12,6 @@ import type {
   ConfirmPaymentResult,
   PaymentIntent,
 } from './types'
-import { parseExpiry } from '@deonpay/elements-core'
 
 export class DeonPay {
   private publicKey: string

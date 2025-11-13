@@ -50,7 +50,6 @@ export const PaymentCard: React.FC<PaymentCardProps> = ({
     isComplete: false,
   })
 
-  const [focused, setFocused] = useState<keyof PaymentCardState | null>(null)
   const cardBrand = detectCardBrand(state.cardNumber)
 
   // Notify parent of changes
@@ -229,12 +228,7 @@ export const PaymentCard: React.FC<PaymentCardProps> = ({
 
       return newState
     })
-    setFocused(null)
   }, [showCardholderName])
-
-  const handleFocus = useCallback((field: keyof PaymentCardState) => {
-    setFocused(field)
-  }, [])
 
   return (
     <div className="deonpay-payment-card">
@@ -252,7 +246,6 @@ export const PaymentCard: React.FC<PaymentCardProps> = ({
             value={state.cardNumber}
             onChange={handleCardNumberChange}
             onBlur={() => handleBlur('cardNumber')}
-            onFocus={() => handleFocus('cardNumber')}
             autoComplete="cc-number"
             inputMode="numeric"
           />
@@ -280,7 +273,6 @@ export const PaymentCard: React.FC<PaymentCardProps> = ({
               value={state.expiry}
               onChange={handleExpiryChange}
               onBlur={() => handleBlur('expiry')}
-              onFocus={() => handleFocus('expiry')}
               autoComplete="cc-exp"
               inputMode="numeric"
               maxLength={5}
@@ -304,7 +296,6 @@ export const PaymentCard: React.FC<PaymentCardProps> = ({
               value={state.cvv}
               onChange={handleCvvChange}
               onBlur={() => handleBlur('cvv')}
-              onFocus={() => handleFocus('cvv')}
               autoComplete="cc-csc"
               inputMode="numeric"
               maxLength={4}
@@ -330,7 +321,6 @@ export const PaymentCard: React.FC<PaymentCardProps> = ({
             value={state.cardholderName}
             onChange={handleCardholderNameChange}
             onBlur={() => handleBlur('cardholderName')}
-            onFocus={() => handleFocus('cardholderName')}
             autoComplete="cc-name"
           />
           {state.errors.cardholderName && state.touched.cardholderName && (
@@ -342,8 +332,7 @@ export const PaymentCard: React.FC<PaymentCardProps> = ({
   )
 }
 
-// Export internal state getter for Elements class
-export const getPaymentCardData = (container: HTMLElement) => {
-  // This will be implemented by the Elements class
-  return null
-}
+// Export internal state getter for Elements class (for future use)
+// export const getPaymentCardData = (container: HTMLElement) => {
+//   return null
+// }

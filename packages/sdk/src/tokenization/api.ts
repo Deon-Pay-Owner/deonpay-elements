@@ -60,23 +60,4 @@ export class TokenizationAPI {
 
     return data.token
   }
-
-  /**
-   * Validates API response
-   * @param response - Fetch response
-   * @returns Parsed JSON data
-   */
-  private async handleResponse<T>(response: Response): Promise<T> {
-    const data = await response.json()
-
-    if (!response.ok) {
-      const error: ApiError = data.error || {
-        type: 'api_error',
-        message: `HTTP ${response.status}: ${response.statusText}`,
-      }
-      throw new Error(error.message)
-    }
-
-    return data
-  }
 }
