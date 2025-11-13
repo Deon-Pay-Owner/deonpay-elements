@@ -61,15 +61,16 @@ export class DeonPay {
     const { elements, confirmParams, redirect = 'if_required' } = params
 
     try {
-      // Get payment element
-      const paymentElements = elements.getElements()
-      const paymentElement = paymentElements.find((el: any) => el.type === 'payment')
+      // Get payment and billing elements
+      const allElements = elements.getElements()
+      const paymentElement = allElements.find((el: any) => el.type === 'payment')
+      const billingElement = allElements.find((el: any) => el.type === 'billing')
 
       if (!paymentElement) {
         throw new Error('No payment element found')
       }
 
-      // Submit element to trigger validation
+      // Submit all elements to trigger validation
       await elements.submit()
 
       // Get card data
@@ -79,7 +80,24 @@ export class DeonPay {
         throw new Error('Información de la tarjeta incompleta')
       }
 
-      // Create token
+      // Get billing details from billing element (if present)
+      let billing_details: any = undefined
+      if (billingElement) {
+        const billingData = (billingElement as any).getBillingData()
+        if (billingData) {
+          billing_details = {
+            name: billingData.name || cardData.cardholder_name || undefined,
+            email: billingData.email || undefined,
+            phone: billingData.phone || undefined,
+            address: billingData.address || undefined,
+          }
+        }
+      } else if (cardData.cardholder_name) {
+        // Fallback to cardholder name if no billing element
+        billing_details = { name: cardData.cardholder_name }
+      }
+
+      // Create token with billing details
       const token = await this.tokenAPI.createToken({
         card: {
           number: cardData.number,
@@ -87,19 +105,18 @@ export class DeonPay {
           exp_year: cardData.exp_year,
           cvv: cardData.cvv,
         },
-        billing_details: cardData.cardholder_name
-          ? { name: cardData.cardholder_name }
-          : undefined,
+        billing_details,
       })
 
       // Get client secret from elements
       const clientSecret = elements.getClientSecret()
       const paymentIntentId = this.extractPaymentIntentId(clientSecret)
 
-      // Confirm payment intent with token
+      // Confirm payment intent with token and billing details
       const paymentIntent = await this.confirmPaymentIntentWithToken(
         paymentIntentId,
         token.id,
+        billing_details,
         confirmParams?.return_url
       )
 
@@ -130,12 +147,14 @@ export class DeonPay {
    * Confirms payment intent with token via API
    * @param paymentIntentId - Payment intent ID
    * @param tokenId - Card token ID
+   * @param billingDetails - Billing details
    * @param returnUrl - Optional return URL for 3DS
    * @returns Payment intent
    */
   private async confirmPaymentIntentWithToken(
     paymentIntentId: string,
     tokenId: string,
+    billingDetails?: any,
     returnUrl?: string
   ): Promise<PaymentIntent> {
     const url = `${this.config.apiUrl}/api/v1/payment_intents/${paymentIntentId}/confirm`
@@ -148,6 +167,7 @@ export class DeonPay {
       },
       body: JSON.stringify({
         payment_method: tokenId,
+        billing_details: billingDetails,
         return_url: returnUrl,
       }),
     })

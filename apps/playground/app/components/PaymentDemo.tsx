@@ -55,6 +55,23 @@ export function PaymentDemo({
       const paymentElement = elements.create('payment')
       paymentElement.mount('#payment-element')
 
+      const billingElement = elements.create('billing', {
+        fields: {
+          name: 'auto',
+          email: 'auto',
+          phone: 'auto',
+          address: {
+            line1: 'auto',
+            line2: 'auto',
+            city: 'auto',
+            state: 'auto',
+            postal_code: 'auto',
+            country: 'auto',
+          },
+        },
+      })
+      billingElement.mount('#billing-element')
+
       paymentElement.on('change', (event: any) => {
         if (event.error) {
           setError(event.error.message)
@@ -119,6 +136,7 @@ export function PaymentDemo({
 
         <form onSubmit={handleSubmit}>
           <div id="payment-element" className="mb-6"></div>
+          <div id="billing-element" className="mb-6"></div>
 
           {error && (
             <div className="mb-4 p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg">
