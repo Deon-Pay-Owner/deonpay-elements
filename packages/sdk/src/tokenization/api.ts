@@ -37,7 +37,7 @@ export class TokenizationAPI {
    * @throws Error if request fails
    */
   async createToken(request: CreateTokenRequest): Promise<CardToken> {
-    const url = `${this.apiUrl}/api/v1/elements/tokens`
+    const url = `${this.apiUrl}/api/elements/tokens`
 
     const response = await fetch(url, {
       method: 'POST',
