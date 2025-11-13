@@ -23,7 +23,7 @@ export function PaymentDemo({ clientSecret, theme = 'flat' }: PaymentDemoProps) 
 
     try {
       const deonpay = DeonPay('pk_test_demo_key', {
-        apiUrl: typeof window !== 'undefined' ? window.location.origin : ''
+        apiUrl: 'https://api.deonpay.mx'
       })
 
       const elements = deonpay.elements({

@@ -12,9 +12,12 @@ export default function PlaygroundPage() {
   useEffect(() => {
     async function createPaymentIntent() {
       try {
-        const res = await fetch('/api/payment-intents', {
+        const res = await fetch('https://api.deonpay.mx/api/v1/payment_intents', {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': 'Bearer pk_test_demo_key'
+          },
           body: JSON.stringify({
             amount: 10000, // $100.00 MXN
             currency: 'MXN',
