@@ -8,13 +8,30 @@ export interface ElementType {
   type: 'payment' | 'billing'
   name: string
   description: string
-  icon: React.ReactNode
+  icon: string
   required?: boolean
 }
 
 interface ElementCardProps {
   element: ElementType
   isDragging?: boolean
+}
+
+function getIcon(type: string) {
+  if (type === 'payment') {
+    return (
+      <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
+          d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
+      </svg>
+    )
+  }
+  return (
+    <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
+        d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+    </svg>
+  )
 }
 
 export function ElementCard({ element, isDragging = false }: ElementCardProps) {
@@ -51,7 +68,7 @@ export function ElementCard({ element, isDragging = false }: ElementCardProps) {
 
       <div className="flex items-start gap-3">
         <div className="flex-shrink-0 w-12 h-12 bg-gradient-to-br from-blue-500 to-blue-600 rounded-lg flex items-center justify-center text-white">
-          {element.icon}
+          {getIcon(element.icon)}
         </div>
         <div className="flex-1">
           <h3 className="font-semibold text-gray-900 dark:text-white mb-1">
