@@ -1,0 +1,5 @@
+{
+  "buildCommand": "cd ../.. && pnpm install && pnpm --filter @deonpay/playground build",
+  "installCommand": "echo 'Skipping install, will be done in buildCommand'",
+  "framework": "nextjs"
+}

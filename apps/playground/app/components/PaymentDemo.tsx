@@ -6,6 +6,7 @@ import '@deonpay/elements-sdk/styles.css'
 
 interface PaymentDemoProps {
   clientSecret: string
+  publicKey: string
   theme?: 'flat' | 'classic' | 'dark'
   customColor?: string
   borderRadius?: number
@@ -15,6 +16,7 @@ interface PaymentDemoProps {
 
 export function PaymentDemo({
   clientSecret,
+  publicKey,
   theme = 'flat',
   customColor = '#0070f3',
   borderRadius = 8,
@@ -33,7 +35,7 @@ export function PaymentDemo({
     if (elementMounted.current) return
 
     try {
-      const deonpay = DeonPay('pk_test_demo_key', {
+      const deonpay = DeonPay(publicKey, {
         apiUrl: 'https://api.deonpay.mx'
       })
 
@@ -69,7 +71,7 @@ export function PaymentDemo({
       console.error('Error mounting elements:', err)
       setError(`Error al cargar el formulario: ${err.message}`)
     }
-  }, [clientSecret, theme, customColor, borderRadius, fontSize, fontFamily])
+  }, [clientSecret, publicKey, theme, customColor, borderRadius, fontSize, fontFamily])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()

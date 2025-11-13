@@ -5,6 +5,7 @@ import { PaymentDemo } from '../PaymentDemo'
 import { ThemeCard } from '../ui/ThemeCard'
 import { ColorPicker } from '../ui/ColorPicker'
 import { FontPicker } from '../ui/FontPicker'
+import { ApiKeysConfig } from '../ui/ApiKeysConfig'
 import { CodeBlock } from '../ui/CodeBlock'
 
 type ThemeName = 'flat' | 'classic' | 'dark'
@@ -47,15 +48,32 @@ export function DemoSection() {
   const [error, setError] = useState<string>('')
   const [showCode, setShowCode] = useState(false)
 
-  // Crear payment intent al montar
+  // API Keys state
+  const [publicKey, setPublicKey] = useState('pk_test_demo_key')
+  const [secretKey, setSecretKey] = useState('sk_test_demo_key')
+  const [keysVersion, setKeysVersion] = useState(0) // Para forzar recreación del payment intent
+
+  // Cargar API keys desde localStorage al montar
+  useEffect(() => {
+    const savedPublicKey = localStorage.getItem('deonpay_public_key')
+    const savedSecretKey = localStorage.getItem('deonpay_secret_key')
+
+    if (savedPublicKey) setPublicKey(savedPublicKey)
+    if (savedSecretKey) setSecretKey(savedSecretKey)
+  }, [])
+
+  // Crear payment intent cuando cambian las keys
   useEffect(() => {
     async function createPaymentIntent() {
+      setError('')
+      setClientSecret('')
+
       try {
         const res = await fetch('https://api.deonpay.mx/api/v1/payment_intents', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
-            'Authorization': 'Bearer pk_test_demo_key'
+            'Authorization': `Bearer ${secretKey}`
           },
           body: JSON.stringify({
             amount: 10000,
@@ -86,7 +104,7 @@ export function DemoSection() {
     }
 
     createPaymentIntent()
-  }, [])
+  }, [secretKey, keysVersion])
 
   // Actualizar color cuando cambia el tema
   useEffect(() => {
@@ -95,6 +113,13 @@ export function DemoSection() {
       setCustomColor(theme.primaryColor)
     }
   }, [selectedTheme])
+
+  // Handler para guardar las API keys
+  const handleSaveKeys = () => {
+    localStorage.setItem('deonpay_public_key', publicKey)
+    localStorage.setItem('deonpay_secret_key', secretKey)
+    setKeysVersion(v => v + 1) // Forzar recreación del payment intent
+  }
 
   const generatedCode = `import DeonPay from '@deonpay/elements-sdk'
 import '@deonpay/elements-sdk/styles.css'
@@ -127,6 +152,17 @@ paymentElement.mount('#payment-element')`
         <p className="text-lg text-gray-600 dark:text-gray-400 max-w-2xl mx-auto">
           Experimenta con DeonPay Elements en tiempo real. Personaliza el tema y los estilos para ver los cambios al instante.
         </p>
+      </div>
+
+      {/* API Keys Configuration */}
+      <div className="mb-12">
+        <ApiKeysConfig
+          publicKey={publicKey}
+          secretKey={secretKey}
+          onPublicKeyChange={setPublicKey}
+          onSecretKeyChange={setSecretKey}
+          onSave={handleSaveKeys}
+        />
       </div>
 
       {/* Theme Selection */}
@@ -244,8 +280,9 @@ paymentElement.mount('#payment-element')`
           ) : (
             <div className="space-y-6">
               <PaymentDemo
-                key={`${selectedTheme}-${customColor}-${borderRadius}-${fontSize}-${fontFamily}`}
+                key={`${selectedTheme}-${customColor}-${borderRadius}-${fontSize}-${fontFamily}-${publicKey}`}
                 clientSecret={clientSecret}
+                publicKey={publicKey}
                 theme={selectedTheme}
                 customColor={customColor}
                 borderRadius={borderRadius}
