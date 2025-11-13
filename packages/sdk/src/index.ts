@@ -56,6 +56,6 @@ export type {
 
 // Export classes for advanced usage
 export { DeonPay as DeonPayClass } from './DeonPay'
-export { Elements } from './Elements'
+export { Elements } from './Elements.tsx'
 export { PaymentCard } from './components/PaymentCard'
 export { CardBrandIcon } from './components/CardBrandIcon'

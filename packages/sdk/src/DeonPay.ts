@@ -3,7 +3,7 @@
  * Entry point for the SDK
  */
 
-import { Elements } from './Elements'
+import { Elements } from './Elements.tsx'
 import { TokenizationAPI } from './tokenization'
 import type {
   DeonPayConfig,

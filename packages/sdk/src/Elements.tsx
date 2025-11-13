@@ -3,7 +3,6 @@
  * Manages payment element instances
  */
 
-import React from 'react'
 import { createRoot, type Root } from 'react-dom/client'
 import { PaymentCard } from './components/PaymentCard'
 import type {
@@ -204,13 +203,13 @@ export class PaymentElement implements ElementInstance {
     // Create React root and render
     this.root = createRoot(this.container)
     this.root.render(
-      React.createElement(PaymentCard, {
-        onChange: (e: ElementChangeEvent) => this.emit('change', e),
-        onReady: () => this.emit('ready', {}),
-        options: {
+      <PaymentCard
+        onChange={(e: ElementChangeEvent) => this.emit('change', e)}
+        onReady={() => this.emit('ready', {})}
+        options={{
           showCardholderName: this.options.fields?.billingDetails !== 'never',
-        },
-      })
+        }}
+      />
     )
   }
 
