@@ -26,26 +26,36 @@
   --dp-transition: all 0.2s ease;
 }
 
-/* Theme: Flat */
+/* Theme: Flat - Moderno y minimalista con colores vibrantes */
 .deonpay-elements[data-theme="flat"] {
-  --dp-border-radius: 4px;
-  --dp-color-primary: #5469d4;
+  --dp-border-radius: 12px;
+  --dp-color-primary: #6366f1; /* Indigo vibrante */
+  --dp-color-background: #f8fafc; /* Fondo claro y limpio */
+  --dp-color-text: #0f172a;
+  --dp-color-border: #e2e8f0;
+  --dp-color-focus-border: #6366f1;
 }
 
-/* Theme: Classic */
+/* Theme: Classic - Profesional con gradientes sutiles */
 .deonpay-elements[data-theme="classic"] {
-  --dp-color-primary: #635bff;
-  --dp-border-radius: 6px;
+  --dp-color-primary: #8b5cf6; /* Púrpura elegante */
+  --dp-color-background: #faf5ff; /* Fondo con tinte púrpura */
+  --dp-color-text: #1e1b4b;
+  --dp-color-border: #ddd6fe;
+  --dp-color-focus-border: #8b5cf6;
+  --dp-border-radius: 8px;
 }
 
-/* Theme: Dark */
+/* Theme: Dark - Oscuro con acentos cyan brillantes */
 .deonpay-elements[data-theme="dark"] {
-  --dp-color-background: #1a1a1a;
-  --dp-color-text: #ffffff;
-  --dp-color-text-secondary: #a0a0a0;
-  --dp-color-text-placeholder: #666666;
-  --dp-color-border: #333333;
-  --dp-color-primary: #0ea5e9;
+  --dp-color-background: #0f172a; /* Azul oscuro profundo */
+  --dp-color-text: #f1f5f9;
+  --dp-color-text-secondary: #cbd5e1;
+  --dp-color-text-placeholder: #64748b;
+  --dp-color-border: #334155;
+  --dp-color-primary: #06b6d4; /* Cyan brillante */
+  --dp-color-focus-border: #06b6d4;
+  --dp-border-radius: 10px;
 }
 
 /* Payment Card Container */
@@ -53,6 +63,9 @@
   font-family: var(--dp-font-family);
   font-size: var(--dp-font-size);
   color: var(--dp-color-text);
+  background-color: var(--dp-color-background);
+  padding: calc(var(--dp-spacing-unit) * 3);
+  border-radius: var(--dp-border-radius);
 }
 
 /* Form Group */

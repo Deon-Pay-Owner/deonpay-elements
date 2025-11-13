@@ -174,7 +174,7 @@ export const PaymentCard: React.FC<PaymentCardProps> = ({
       // Validate on blur
       switch (field) {
         case 'cardNumber': {
-          const rawValue = prev.cardNumber.replace(/\s/g, '')
+          const rawValue = String(prev.cardNumber || '').replace(/\s/g, '')
           const validation = validateCardNumber(rawValue, true)
           newState.errors = {
             ...prev.errors,

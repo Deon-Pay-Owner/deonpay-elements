@@ -21,20 +21,20 @@ const themes: ThemeConfig[] = [
   {
     name: 'flat',
     displayName: 'Flat',
-    description: 'Diseño moderno y minimalista con colores planos',
-    primaryColor: '#0070f3'
+    description: 'Diseño moderno y minimalista con colores vibrantes',
+    primaryColor: '#6366f1' // Indigo vibrante
   },
   {
     name: 'classic',
     displayName: 'Classic',
-    description: 'Estilo profesional con bordes definidos',
-    primaryColor: '#5469d4'
+    description: 'Estilo profesional con gradientes sutiles',
+    primaryColor: '#8b5cf6' // Púrpura elegante
   },
   {
     name: 'dark',
     displayName: 'Dark',
-    description: 'Modo oscuro elegante y moderno',
-    primaryColor: '#0ea5e9'
+    description: 'Modo oscuro elegante con acentos brillantes',
+    primaryColor: '#06b6d4' // Cyan brillante
   }
 ]
 
