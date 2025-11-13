@@ -92,7 +92,7 @@ importers:
   packages/sdk:
     dependencies:
       '@deonpay/elements-core':
-        specifier: workspace:*
+        specifier: ^0.1.0
         version: link:../core
     devDependencies:
       '@types/react':
