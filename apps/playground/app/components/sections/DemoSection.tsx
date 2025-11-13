@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 import { PaymentDemo } from '../PaymentDemo'
 import { ThemeCard } from '../ui/ThemeCard'
 import { ColorPicker } from '../ui/ColorPicker'
+import { FontPicker } from '../ui/FontPicker'
 import { CodeBlock } from '../ui/CodeBlock'
 
 type ThemeName = 'flat' | 'classic' | 'dark'
@@ -42,6 +43,7 @@ export function DemoSection() {
   const [customColor, setCustomColor] = useState('#0070f3')
   const [borderRadius, setBorderRadius] = useState(8)
   const [fontSize, setFontSize] = useState(14)
+  const [fontFamily, setFontFamily] = useState('-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, sans-serif')
   const [error, setError] = useState<string>('')
   const [showCode, setShowCode] = useState(false)
 
@@ -63,14 +65,23 @@ export function DemoSection() {
         })
 
         const data = await res.json()
+
+        if (!res.ok) {
+          const errorMsg = data.error?.message || data.message || 'Error desconocido'
+          console.error('API Error:', data)
+          setError(`Error al crear payment intent: ${errorMsg}`)
+          return
+        }
+
         if (data.client_secret) {
           setClientSecret(data.client_secret)
         } else {
-          setError('Error al crear el payment intent')
+          console.error('No client_secret in response:', data)
+          setError('Error: No se recibió el client_secret')
         }
-      } catch (err) {
+      } catch (err: any) {
         console.error('Error:', err)
-        setError('Error al conectar con la API')
+        setError(`Error al conectar con la API: ${err.message}`)
       }
     }
 
@@ -98,6 +109,7 @@ const elements = deonpay.elements({
       colorPrimary: '${customColor}',
       borderRadius: '${borderRadius}px',
       fontSize: '${fontSize}px',
+      fontFamily: '${fontFamily}',
     },
   },
 })
@@ -170,8 +182,16 @@ paymentElement.mount('#payment-element')`
               onChange={setCustomColor}
             />
 
+            <FontPicker
+              value={fontFamily}
+              onChange={setFontFamily}
+            />
+
             <div>
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                <svg className="w-4 h-4 inline-block mr-2 -mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                </svg>
                 Border Radius: {borderRadius}px
               </label>
               <input
@@ -186,6 +206,9 @@ paymentElement.mount('#payment-element')`
 
             <div>
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                <svg className="w-4 h-4 inline-block mr-2 -mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4" />
+                </svg>
                 Font Size: {fontSize}px
               </label>
               <input
@@ -221,12 +244,13 @@ paymentElement.mount('#payment-element')`
           ) : (
             <div className="space-y-6">
               <PaymentDemo
-                key={`${selectedTheme}-${customColor}-${borderRadius}-${fontSize}`}
+                key={`${selectedTheme}-${customColor}-${borderRadius}-${fontSize}-${fontFamily}`}
                 clientSecret={clientSecret}
                 theme={selectedTheme}
                 customColor={customColor}
                 borderRadius={borderRadius}
                 fontSize={fontSize}
+                fontFamily={fontFamily}
               />
             </div>
           )}

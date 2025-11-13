@@ -10,6 +10,7 @@ interface PaymentDemoProps {
   customColor?: string
   borderRadius?: number
   fontSize?: number
+  fontFamily?: string
 }
 
 export function PaymentDemo({
@@ -17,7 +18,8 @@ export function PaymentDemo({
   theme = 'flat',
   customColor = '#0070f3',
   borderRadius = 8,
-  fontSize = 14
+  fontSize = 14,
+  fontFamily = '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, sans-serif'
 }: PaymentDemoProps) {
   const [mounted, setMounted] = useState(false)
   const [loading, setLoading] = useState(false)
@@ -43,6 +45,7 @@ export function PaymentDemo({
             colorPrimary: customColor,
             borderRadius: `${borderRadius}px`,
             fontSize: `${fontSize}px`,
+            fontFamily: fontFamily,
           },
         },
       })
@@ -66,7 +69,7 @@ export function PaymentDemo({
       console.error('Error mounting elements:', err)
       setError(`Error al cargar el formulario: ${err.message}`)
     }
-  }, [clientSecret, theme, customColor, borderRadius, fontSize])
+  }, [clientSecret, theme, customColor, borderRadius, fontSize, fontFamily])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
