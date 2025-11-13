@@ -68,7 +68,15 @@ export function DemoSection() {
       setError('')
       setClientSecret('')
 
+      // Validar que las keys no sean las de demo
+      if (secretKey === 'sk_test_demo_key' || publicKey === 'pk_test_demo_key') {
+        setError('Por favor, configura tus API Keys reales en la sección "Configuración de API Keys"')
+        return
+      }
+
       try {
+        console.log('Creating payment intent with SK:', secretKey.substring(0, 20) + '...')
+
         const res = await fetch('https://api.deonpay.mx/api/v1/payment_intents', {
           method: 'POST',
           headers: {
@@ -82,29 +90,45 @@ export function DemoSection() {
           }),
         })
 
-        const data = await res.json()
+        console.log('Response status:', res.status)
+        console.log('Response headers:', Object.fromEntries(res.headers.entries()))
+
+        let data
+        const contentType = res.headers.get('content-type')
+
+        if (contentType && contentType.includes('application/json')) {
+          data = await res.json()
+          console.log('Response data:', data)
+        } else {
+          const text = await res.text()
+          console.error('Non-JSON response:', text)
+          setError(`Error: La API devolvió una respuesta no-JSON. Status: ${res.status}`)
+          return
+        }
 
         if (!res.ok) {
-          const errorMsg = data.error?.message || data.message || 'Error desconocido'
-          console.error('API Error:', data)
-          setError(`Error al crear payment intent: ${errorMsg}`)
+          const errorMsg = data.error?.message || data.message || JSON.stringify(data) || 'Error desconocido'
+          console.error('API Error Response:', data)
+          setError(`Error al crear payment intent (${res.status}): ${errorMsg}`)
           return
         }
 
         if (data.client_secret) {
+          console.log('Payment Intent created successfully:', data.id)
           setClientSecret(data.client_secret)
         } else {
           console.error('No client_secret in response:', data)
-          setError('Error: No se recibió el client_secret')
+          console.error('Full response structure:', JSON.stringify(data, null, 2))
+          setError(`Error: No se recibió el client_secret. Respuesta: ${JSON.stringify(data).substring(0, 200)}`)
         }
       } catch (err: any) {
-        console.error('Error:', err)
+        console.error('Exception caught:', err)
         setError(`Error al conectar con la API: ${err.message}`)
       }
     }
 
     createPaymentIntent()
-  }, [secretKey, keysVersion])
+  }, [secretKey, publicKey, keysVersion])
 
   // Actualizar color cuando cambia el tema
   useEffect(() => {
