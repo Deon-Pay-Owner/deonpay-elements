@@ -3,6 +3,16 @@
 import { useEffect, useState, useRef } from 'react'
 import DeonPay from '@deonpay/elements-sdk'
 import '@deonpay/elements-sdk/styles.css'
+import { ElementType } from './builder/ElementCard'
+
+export interface ButtonConfig {
+  backgroundColor?: string
+  textColor?: string
+  fontFamily?: string
+  fontSize?: number
+  borderRadius?: number
+  text?: string
+}
 
 interface PaymentDemoProps {
   clientSecret: string
@@ -12,6 +22,9 @@ interface PaymentDemoProps {
   borderRadius?: number
   fontSize?: number
   fontFamily?: string
+  elements?: ElementType[]
+  buttonConfig?: ButtonConfig
+  isFormValid?: boolean
 }
 
 export function PaymentDemo({
@@ -21,7 +34,10 @@ export function PaymentDemo({
   customColor = '#0070f3',
   borderRadius = 8,
   fontSize = 14,
-  fontFamily = '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, sans-serif'
+  fontFamily = '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, sans-serif',
+  elements = [],
+  buttonConfig,
+  isFormValid = true,
 }: PaymentDemoProps) {
   const [mounted, setMounted] = useState(false)
   const [loading, setLoading] = useState(false)
@@ -39,7 +55,7 @@ export function PaymentDemo({
         apiUrl: 'https://api.deonpay.mx'
       })
 
-      const elements = deonpay.elements({
+      const elementsInstance = deonpay.elements({
         clientSecret,
         appearance: {
           theme,
@@ -52,43 +68,51 @@ export function PaymentDemo({
         },
       })
 
-      const paymentElement = elements.create('payment')
-      paymentElement.mount('#payment-element')
+      const hasPaymentElement = elements.some(el => el.type === 'payment')
+      const hasBillingElement = elements.some(el => el.type === 'billing')
 
-      const billingElement = elements.create('billing', {
-        fields: {
-          name: 'auto',
-          email: 'auto',
-          phone: 'auto',
-          address: {
-            line1: 'auto',
-            line2: 'auto',
-            city: 'auto',
-            state: 'auto',
-            postal_code: 'auto',
-            country: 'auto',
+      // Only mount elements that are in the builder
+      if (hasPaymentElement) {
+        const paymentElement = elementsInstance.create('payment')
+        paymentElement.mount('#payment-element')
+
+        paymentElement.on('change', (event: any) => {
+          if (event.error) {
+            setError(event.error.message)
+          } else {
+            setError('')
+          }
+        })
+      }
+
+      if (hasBillingElement) {
+        const billingElement = elementsInstance.create('billing', {
+          fields: {
+            name: 'auto',
+            email: 'auto',
+            phone: 'auto',
+            address: {
+              line1: 'auto',
+              line2: 'auto',
+              city: 'auto',
+              state: 'auto',
+              postal_code: 'auto',
+              country: 'auto',
+            },
           },
-        },
-      })
-      billingElement.mount('#billing-element')
-
-      paymentElement.on('change', (event: any) => {
-        if (event.error) {
-          setError(event.error.message)
-        } else {
-          setError('')
-        }
-      })
+        })
+        billingElement.mount('#billing-element')
+      }
 
       deonpayRef.current = deonpay
-      elementsRef.current = elements
+      elementsRef.current = elementsInstance
       elementMounted.current = true
       setMounted(true)
     } catch (err: any) {
       console.error('Error mounting elements:', err)
       setError(`Error al cargar el formulario: ${err.message}`)
     }
-  }, [clientSecret, publicKey, theme, customColor, borderRadius, fontSize, fontFamily])
+  }, [clientSecret, publicKey, theme, customColor, borderRadius, fontSize, fontFamily, elements])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -135,8 +159,12 @@ export function PaymentDemo({
         </div>
 
         <form onSubmit={handleSubmit}>
-          <div id="payment-element" className="mb-6"></div>
-          <div id="billing-element" className="mb-6"></div>
+          {elements.some(el => el.type === 'payment') && (
+            <div id="payment-element" className="mb-6"></div>
+          )}
+          {elements.some(el => el.type === 'billing') && (
+            <div id="billing-element" className="mb-6"></div>
+          )}
 
           {error && (
             <div className="mb-4 p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg">
@@ -151,12 +179,19 @@ export function PaymentDemo({
 
           <button
             type="submit"
-            disabled={loading || !mounted}
-            className="w-full bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 disabled:from-gray-400 disabled:to-gray-500 text-white font-semibold py-3 px-6 rounded-lg transition-all disabled:cursor-not-allowed shadow-lg hover:shadow-xl disabled:shadow-none flex items-center justify-center gap-2"
+            disabled={loading || !mounted || !isFormValid}
+            className="w-full font-semibold py-3 px-6 transition-all disabled:cursor-not-allowed shadow-lg hover:shadow-xl disabled:shadow-none flex items-center justify-center gap-2 disabled:opacity-60"
+            style={{
+              backgroundColor: buttonConfig?.backgroundColor || customColor,
+              color: buttonConfig?.textColor || '#ffffff',
+              fontFamily: buttonConfig?.fontFamily || fontFamily,
+              fontSize: buttonConfig?.fontSize ? `${buttonConfig.fontSize}px` : '16px',
+              borderRadius: buttonConfig?.borderRadius ? `${buttonConfig.borderRadius}px` : `${borderRadius}px`,
+            }}
           >
             {loading ? (
               <>
-                <svg className="animate-spin h-5 w-5 text-white" fill="none" viewBox="0 0 24 24">
+                <svg className="animate-spin h-5 w-5" fill="none" viewBox="0 0 24 24">
                   <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                   <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                 </svg>
@@ -167,7 +202,7 @@ export function PaymentDemo({
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
                 </svg>
-                Pagar $100.00 MXN
+                {buttonConfig?.text || 'Pagar $100.00 MXN'}
               </>
             )}
           </button>

@@ -1,12 +1,16 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { PaymentDemo } from '../PaymentDemo'
+import { PaymentDemo, ButtonConfig } from '../PaymentDemo'
 import { ThemeCard } from '../ui/ThemeCard'
 import { ColorPicker } from '../ui/ColorPicker'
 import { FontPicker } from '../ui/FontPicker'
 import { ApiKeysConfig } from '../ui/ApiKeysConfig'
 import { CodeBlock } from '../ui/CodeBlock'
+import { DragDropBuilder } from '../builder/DragDropBuilder'
+import { ElementType } from '../builder/ElementCard'
+import { useFormValidation } from '../../hooks/useFormValidation'
+import { ValidationBanner } from '../ui/ValidationBanner'
 
 type ThemeName = 'flat' | 'classic' | 'dark'
 
@@ -52,6 +56,22 @@ export function DemoSection() {
   const [publicKey, setPublicKey] = useState('pk_test_demo_key')
   const [secretKey, setSecretKey] = useState('sk_test_demo_key')
   const [keysVersion, setKeysVersion] = useState(0) // Para forzar recreación del payment intent
+
+  // Form builder state
+  const [formElements, setFormElements] = useState<ElementType[]>([])
+
+  // Button customization state
+  const [buttonConfig, setButtonConfig] = useState<ButtonConfig>({
+    backgroundColor: undefined, // Will use customColor
+    textColor: '#ffffff',
+    fontFamily: undefined, // Will use fontFamily
+    fontSize: 16,
+    borderRadius: undefined, // Will use borderRadius
+    text: 'Pagar $100.00 MXN',
+  })
+
+  // Form validation
+  const validation = useFormValidation(formElements, secretKey)
 
   // Cargar API keys desde localStorage al montar
   useEffect(() => {
@@ -171,10 +191,10 @@ paymentElement.mount('#payment-element')`
       {/* Section Header */}
       <div className="text-center mb-12">
         <h2 className="text-4xl font-bold text-gray-900 dark:text-white mb-4">
-          Demo Interactiva
+          Playground Interactivo
         </h2>
         <p className="text-lg text-gray-600 dark:text-gray-400 max-w-2xl mx-auto">
-          Experimenta con DeonPay Elements en tiempo real. Personaliza el tema y los estilos para ver los cambios al instante.
+          Construye tu formulario de pago personalizado con drag & drop. Experimenta con diferentes configuraciones en tiempo real.
         </p>
       </div>
 
@@ -186,6 +206,31 @@ paymentElement.mount('#payment-element')`
           onPublicKeyChange={setPublicKey}
           onSecretKeyChange={setSecretKey}
           onSave={handleSaveKeys}
+        />
+      </div>
+
+      {/* Validation Warnings */}
+      {validation.warnings.length > 0 && (
+        <div className="mb-8 space-y-4">
+          {validation.warnings.map((warning, idx) => (
+            <ValidationBanner key={idx} type="warning" message={warning} />
+          ))}
+        </div>
+      )}
+
+      {validation.errors.length > 0 && (
+        <div className="mb-8 space-y-4">
+          {validation.errors.map((error, idx) => (
+            <ValidationBanner key={idx} type="error" message={error} />
+          ))}
+        </div>
+      )}
+
+      {/* Drag & Drop Form Builder */}
+      <div className="mb-12">
+        <DragDropBuilder
+          onElementsChange={setFormElements}
+          showValidationWarning={validation.requiresBillingElement && validation.hasPaymentElement && !validation.hasBillingElement}
         />
       </div>
 
@@ -231,63 +276,126 @@ paymentElement.mount('#payment-element')`
 
       {/* Customization Panel */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-12">
-        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 border border-gray-200 dark:border-gray-700">
-          <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-6">
-            Personalización
-          </h3>
-          <div className="space-y-6">
-            <ColorPicker
-              label="Color Primario"
-              value={customColor}
-              onChange={setCustomColor}
-            />
-
-            <FontPicker
-              value={fontFamily}
-              onChange={setFontFamily}
-            />
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                <svg className="w-4 h-4 inline-block mr-2 -mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                </svg>
-                Border Radius: {borderRadius}px
-              </label>
-              <input
-                type="range"
-                min="0"
-                max="20"
-                value={borderRadius}
-                onChange={(e) => setBorderRadius(Number(e.target.value))}
-                className="w-full h-2 bg-gray-200 dark:bg-gray-700 rounded-lg appearance-none cursor-pointer accent-blue-600"
+        <div className="space-y-6">
+          {/* Theme Customization */}
+          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 border border-gray-200 dark:border-gray-700">
+            <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-6">
+              Personalización del Tema
+            </h3>
+            <div className="space-y-6">
+              <ColorPicker
+                label="Color Primario"
+                value={customColor}
+                onChange={setCustomColor}
               />
-            </div>
 
-            <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                <svg className="w-4 h-4 inline-block mr-2 -mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4" />
-                </svg>
-                Font Size: {fontSize}px
-              </label>
-              <input
-                type="range"
-                min="12"
-                max="18"
-                value={fontSize}
-                onChange={(e) => setFontSize(Number(e.target.value))}
-                className="w-full h-2 bg-gray-200 dark:bg-gray-700 rounded-lg appearance-none cursor-pointer accent-blue-600"
+              <FontPicker
+                value={fontFamily}
+                onChange={setFontFamily}
               />
-            </div>
 
-            <button
-              onClick={() => setShowCode(!showCode)}
-              className="w-full px-4 py-2 bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-white rounded-lg font-medium hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
-            >
-              {showCode ? 'Ocultar Código' : 'Ver Código Generado'}
-            </button>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  <svg className="w-4 h-4 inline-block mr-2 -mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                  </svg>
+                  Border Radius: {borderRadius}px
+                </label>
+                <input
+                  type="range"
+                  min="0"
+                  max="20"
+                  value={borderRadius}
+                  onChange={(e) => setBorderRadius(Number(e.target.value))}
+                  className="w-full h-2 bg-gray-200 dark:bg-gray-700 rounded-lg appearance-none cursor-pointer accent-blue-600"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  <svg className="w-4 h-4 inline-block mr-2 -mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4" />
+                  </svg>
+                  Font Size: {fontSize}px
+                </label>
+                <input
+                  type="range"
+                  min="12"
+                  max="18"
+                  value={fontSize}
+                  onChange={(e) => setFontSize(Number(e.target.value))}
+                  className="w-full h-2 bg-gray-200 dark:bg-gray-700 rounded-lg appearance-none cursor-pointer accent-blue-600"
+                />
+              </div>
+            </div>
           </div>
+
+          {/* Button Customization */}
+          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 border border-gray-200 dark:border-gray-700">
+            <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-6">
+              Personalización del Botón
+            </h3>
+            <div className="space-y-6">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  Texto del Botón
+                </label>
+                <input
+                  type="text"
+                  value={buttonConfig.text}
+                  onChange={(e) => setButtonConfig({ ...buttonConfig, text: e.target.value })}
+                  className="w-full px-3 py-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-900 dark:text-white"
+                  placeholder="Pagar $100.00 MXN"
+                />
+              </div>
+
+              <ColorPicker
+                label="Color del Texto"
+                value={buttonConfig.textColor || '#ffffff'}
+                onChange={(color) => setButtonConfig({ ...buttonConfig, textColor: color })}
+              />
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  Tamaño de Fuente: {buttonConfig.fontSize}px
+                </label>
+                <input
+                  type="range"
+                  min="12"
+                  max="24"
+                  value={buttonConfig.fontSize}
+                  onChange={(e) => setButtonConfig({ ...buttonConfig, fontSize: Number(e.target.value) })}
+                  className="w-full h-2 bg-gray-200 dark:bg-gray-700 rounded-lg appearance-none cursor-pointer accent-blue-600"
+                />
+              </div>
+
+              {/* Button Preview */}
+              <div className="pt-4 border-t border-gray-200 dark:border-gray-700">
+                <p className="text-xs text-gray-500 dark:text-gray-400 mb-3">Vista Previa:</p>
+                <button
+                  className="w-full font-semibold py-3 px-6 shadow-lg flex items-center justify-center gap-2"
+                  style={{
+                    backgroundColor: customColor,
+                    color: buttonConfig.textColor,
+                    fontSize: `${buttonConfig.fontSize}px`,
+                    borderRadius: `${borderRadius}px`,
+                  }}
+                >
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
+                  </svg>
+                  {buttonConfig.text}
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <button
+            onClick={() => setShowCode(!showCode)}
+            className="w-full px-4 py-3 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white rounded-lg font-semibold shadow-lg hover:shadow-xl transition-all"
+          >
+            {showCode ? 'Ocultar Código' : 'Ver Código Generado'}
+          </button>
         </div>
 
         {/* Payment Demo */}
@@ -301,10 +409,25 @@ paymentElement.mount('#payment-element')`
               <div className="inline-block h-12 w-12 animate-spin rounded-full border-4 border-solid border-blue-600 border-r-transparent mb-4"></div>
               <p className="text-gray-600 dark:text-gray-400">Cargando demo...</p>
             </div>
+          ) : formElements.length === 0 ? (
+            <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-12 text-center border border-gray-200 dark:border-gray-700">
+              <div className="text-gray-400 dark:text-gray-600 mb-4">
+                <svg className="w-20 h-20 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5}
+                    d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+                </svg>
+              </div>
+              <p className="text-gray-600 dark:text-gray-400 font-medium mb-2">
+                Construye tu formulario
+              </p>
+              <p className="text-sm text-gray-500 dark:text-gray-500">
+                Arrastra elementos al constructor para comenzar
+              </p>
+            </div>
           ) : (
             <div className="space-y-6">
               <PaymentDemo
-                key={`${selectedTheme}-${customColor}-${borderRadius}-${fontSize}-${fontFamily}-${publicKey}`}
+                key={`${selectedTheme}-${customColor}-${borderRadius}-${fontSize}-${fontFamily}-${publicKey}-${formElements.map(e => e.id).join('-')}`}
                 clientSecret={clientSecret}
                 publicKey={publicKey}
                 theme={selectedTheme}
@@ -312,6 +435,9 @@ paymentElement.mount('#payment-element')`
                 borderRadius={borderRadius}
                 fontSize={fontSize}
                 fontFamily={fontFamily}
+                elements={formElements}
+                buttonConfig={buttonConfig}
+                isFormValid={validation.isValid}
               />
             </div>
           )}
