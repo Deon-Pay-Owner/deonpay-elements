@@ -3,11 +3,7 @@ set -e
 
 echo "Building DeonPay Elements for Vercel..."
 
-# Install all dependencies
-echo "Installing dependencies..."
-pnpm install
-
-# Build packages in order
+# Build packages in order (dependencies already installed by Vercel)
 echo "Building core package..."
 pnpm --filter @deonpay/elements-core build
 
