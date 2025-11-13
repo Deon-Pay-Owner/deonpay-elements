@@ -32,8 +32,8 @@
   --dp-color-primary: #5469d4;
 }
 
-/* Theme: Stripe */
-.deonpay-elements[data-theme="stripe"] {
+/* Theme: Classic */
+.deonpay-elements[data-theme="classic"] {
   --dp-color-primary: #635bff;
   --dp-border-radius: 6px;
 }

@@ -2,7 +2,7 @@
  * DeonPay Elements SDK Types
  */
 
-export type Theme = 'flat' | 'stripe' | 'dark' | 'none'
+export type Theme = 'flat' | 'classic' | 'dark' | 'none'
 
 export interface AppearanceVariables {
   colorPrimary?: string
