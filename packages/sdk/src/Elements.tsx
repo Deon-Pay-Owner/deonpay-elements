@@ -140,12 +140,15 @@ export class PaymentElement implements ElementInstance {
    */
   unmount(): void {
     if (this.root) {
-      this.root.unmount()
+      try {
+        this.root.unmount()
+      } catch (e) {
+        // Ignore unmount errors if already unmounted
+      }
       this.root = null
     }
 
     if (this.container) {
-      this.container.innerHTML = ''
       this.container = null
     }
   }
@@ -213,6 +216,7 @@ export class PaymentElement implements ElementInstance {
         options={{
           showCardholderName: this.options.fields?.billingDetails !== 'never',
         }}
+        appearance={this.elements.getAppearance()}
       />
     )
   }
@@ -310,12 +314,15 @@ export class BillingElement implements ElementInstance {
    */
   unmount(): void {
     if (this.root) {
-      this.root.unmount()
+      try {
+        this.root.unmount()
+      } catch (e) {
+        // Ignore unmount errors if already unmounted
+      }
       this.root = null
     }
 
     if (this.container) {
-      this.container.innerHTML = ''
       this.container = null
     }
   }
@@ -381,6 +388,7 @@ export class BillingElement implements ElementInstance {
         onChange={(e: ElementChangeEvent) => this.emit('change', e)}
         onReady={() => this.emit('ready', {})}
         options={this.options}
+        appearance={this.elements.getAppearance()}
       />
     )
   }

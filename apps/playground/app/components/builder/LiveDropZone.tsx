@@ -1,5 +1,6 @@
 'use client'
 
+import React from 'react'
 import { useDroppable } from '@dnd-kit/core'
 import { ElementType } from './ElementCard'
 
@@ -19,6 +20,7 @@ interface LiveDropZoneProps {
   fontFamily: string
   mounted: boolean
   hasPaymentElement: boolean
+  backgroundColor?: string
 }
 
 export function LiveDropZone({
@@ -37,44 +39,70 @@ export function LiveDropZone({
   fontFamily,
   mounted,
   hasPaymentElement,
+  backgroundColor = '#ffffff',
 }: LiveDropZoneProps) {
   const { isOver, setNodeRef } = useDroppable({
     id: 'live-drop-zone'
   })
 
+  const [amountInput, setAmountInput] = React.useState((amount / 100).toFixed(2))
+  const [isJsonExpanded, setIsJsonExpanded] = React.useState(false)
+  const [isResultsExpanded, setIsResultsExpanded] = React.useState(true)
+
+  // Update local state when amount prop changes
+  React.useEffect(() => {
+    setAmountInput((amount / 100).toFixed(2))
+  }, [amount])
+
+  const handleAmountInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value
+    setAmountInput(value)
+  }
+
+  const handleAmountBlur = () => {
+    // Parse and validate on blur
+    const numericValue = parseFloat(amountInput)
+    if (!isNaN(numericValue) && numericValue > 0) {
+      onAmountChange(numericValue.toFixed(2))
+    } else {
+      // Reset to current amount if invalid
+      setAmountInput((amount / 100).toFixed(2))
+    }
+  }
+
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+    <div className="space-y-6">
       {/* Payment Form */}
       <div
         ref={setNodeRef}
         className={`
-          bg-white dark:bg-gray-800 rounded-xl shadow-xl border-2 transition-all duration-200
+          rounded-xl shadow-xl border-2 transition-all duration-200
           ${isOver
             ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/20 scale-[1.01]'
             : 'border-gray-200 dark:border-gray-700'
           }
         `}
+        style={{ backgroundColor }}
       >
-        <div className="p-6">
-          {/* Amount Input */}
-          <div className="mb-6 pb-6 border-b border-gray-200 dark:border-gray-700">
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+        <div className="p-4 sm:p-6">
+          {/* Amount Input - Mobile Responsive */}
+          <div className="mb-4 sm:mb-6 pb-4 sm:pb-6 border-b border-gray-200 dark:border-gray-700">
+            <label className="block text-xs sm:text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
               Monto a cobrar
             </label>
             <div className="relative">
-              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 dark:text-gray-400 font-semibold">
+              <span className="absolute left-2 sm:left-3 top-1/2 -translate-y-1/2 text-gray-500 dark:text-gray-400 font-semibold text-sm sm:text-base">
                 $
               </span>
               <input
-                type="number"
-                value={(amount / 100).toFixed(2)}
-                onChange={(e) => onAmountChange(e.target.value)}
-                className="w-full pl-8 pr-16 py-3 bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-600 rounded-lg text-lg font-semibold text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+                type="text"
+                value={amountInput}
+                onChange={handleAmountInputChange}
+                onBlur={handleAmountBlur}
+                className="w-full pl-6 sm:pl-8 pr-12 sm:pr-16 py-2 sm:py-3 bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-600 rounded-lg text-base sm:text-lg font-semibold text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
                 placeholder="100.00"
-                step="0.01"
-                min="1"
               />
-              <span className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 dark:text-gray-400 font-semibold">
+              <span className="absolute right-2 sm:right-3 top-1/2 -translate-y-1/2 text-gray-500 dark:text-gray-400 font-semibold text-xs sm:text-sm">
                 MXN
               </span>
             </div>
@@ -169,12 +197,12 @@ export function LiveDropZone({
             </div>
           )}
 
-          {/* Pay Button */}
-          <div className="mt-6 pt-6 border-t border-gray-200 dark:border-gray-700">
+          {/* Pay Button - Touch-friendly on mobile (min 44px) */}
+          <div className="mt-4 sm:mt-6 pt-4 sm:pt-6 border-t border-gray-200 dark:border-gray-700">
             <button
               onClick={onPayment}
               disabled={!hasPaymentElement || loading || processing || !mounted}
-              className="w-full font-semibold py-3 px-6 transition-all disabled:cursor-not-allowed shadow-lg hover:shadow-xl disabled:shadow-none flex items-center justify-center gap-2 disabled:opacity-60"
+              className="w-full font-semibold py-3 sm:py-3 px-4 sm:px-6 transition-all disabled:cursor-not-allowed shadow-lg hover:shadow-xl disabled:shadow-none flex items-center justify-center gap-2 disabled:opacity-60 min-h-[44px]"
               style={{
                 backgroundColor: buttonConfig?.backgroundColor || customColor,
                 color: buttonConfig?.textColor || '#ffffff',
@@ -210,86 +238,133 @@ export function LiveDropZone({
         </div>
       </div>
 
-      {/* Result Panel */}
-      <div className="bg-white dark:bg-gray-800 rounded-xl shadow-xl p-6 border border-gray-200 dark:border-gray-700">
-        <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-6">
-          Resultado de la Transacción
-        </h3>
+      {/* Result Panel - Collapsible and Full Width */}
+      <div className="bg-white dark:bg-gray-800 rounded-xl shadow-xl border border-gray-200 dark:border-gray-700 overflow-hidden">
+        <button
+          onClick={() => setIsResultsExpanded(!isResultsExpanded)}
+          className="w-full px-6 py-4 flex items-center justify-between hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors"
+        >
+          <h3 className="text-lg font-semibold text-gray-900 dark:text-white flex items-center gap-2">
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+            </svg>
+            Resultado
+            {result && (
+              <span className="ml-2 px-2 py-0.5 bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 text-xs font-medium rounded-full">
+                Exitoso
+              </span>
+            )}
+          </h3>
+          <svg
+            className={`w-5 h-5 text-gray-500 dark:text-gray-400 transition-transform ${isResultsExpanded ? 'rotate-180' : ''}`}
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+          </svg>
+        </button>
 
-        {result ? (
-          <div className="space-y-4">
-            <div className="p-4 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg">
+        {isResultsExpanded && (
+          <div className="px-6 pb-6 border-t border-gray-200 dark:border-gray-700">
+            <div className="pt-4">
+              {result ? (
+          <div className="space-y-3">
+            {/* Success Message */}
+            <div className="p-3 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg">
               <div className="flex items-center gap-2">
-                <svg className="w-6 h-6 text-green-600 dark:text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg className="w-5 h-5 text-green-600 dark:text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                 </svg>
                 <div>
-                  <p className="text-sm font-medium text-green-800 dark:text-green-400">
+                  <p className="text-sm font-semibold text-green-800 dark:text-green-400">
                     ¡Pago Exitoso!
                   </p>
-                  <p className="text-xs text-green-700 dark:text-green-300 mt-1">
-                    ID de transacción: {result.id}
+                  <p className="text-xs text-green-700 dark:text-green-300 mt-0.5 font-mono">
+                    {result.id}
                   </p>
                 </div>
               </div>
             </div>
 
-            <div className="bg-gray-50 dark:bg-gray-900 rounded-lg p-4 overflow-x-auto border border-gray-200 dark:border-gray-700">
-              <p className="text-xs text-gray-500 dark:text-gray-400 mb-2">Respuesta completa:</p>
-              <pre className="text-xs text-gray-800 dark:text-gray-200 font-mono">
-                {JSON.stringify(result, null, 2)}
-              </pre>
+            {/* Transaction Details - Collapsible */}
+            <div className="border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden">
+              <button
+                onClick={() => setIsJsonExpanded(!isJsonExpanded)}
+                className="w-full px-3 py-2 bg-gray-50 dark:bg-gray-900 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors flex items-center justify-between text-sm font-medium text-gray-700 dark:text-gray-300"
+              >
+                <span>Ver detalles JSON</span>
+                <svg
+                  className={`w-4 h-4 transition-transform ${isJsonExpanded ? 'rotate-180' : ''}`}
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                </svg>
+              </button>
+              {isJsonExpanded && (
+                <div className="p-3 bg-gray-50 dark:bg-gray-900 border-t border-gray-200 dark:border-gray-700 max-h-64 overflow-auto">
+                  <pre className="text-xs text-gray-800 dark:text-gray-200 font-mono">
+                    {JSON.stringify(result, null, 2)}
+                  </pre>
+                </div>
+              )}
             </div>
 
-            <div className="pt-4 border-t border-gray-200 dark:border-gray-700">
-              <p className="text-sm text-gray-600 dark:text-gray-400">
-                Esta transacción aparecerá en tu dashboard de comerciante.
+            {/* Dashboard Link */}
+            <div className="pt-3 border-t border-gray-200 dark:border-gray-700">
+              <p className="text-xs text-gray-600 dark:text-gray-400">
+                Esta transacción aparece en tu dashboard
               </p>
             </div>
-          </div>
-        ) : (
-          <div className="text-center py-12">
-            <div className="text-gray-400 dark:text-gray-600 mb-4">
-              <svg className="w-20 h-20 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5}
-                  d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-              </svg>
+              </div>
+            ) : (
+              <div className="text-center py-8">
+                <div className="text-gray-400 dark:text-gray-600 mb-3">
+                  <svg className="w-16 h-16 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5}
+                      d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                  </svg>
+                </div>
+                <p className="text-sm text-gray-500 dark:text-gray-400 font-medium mb-1">
+                  Esperando transacción
+                </p>
+                <p className="text-xs text-gray-400 dark:text-gray-500">
+                  Completa el formulario y haz clic en pagar
+                </p>
+              </div>
+            )}
+
+            {/* Test Cards Info - Mobile Responsive */}
+            <div className="mt-6 sm:mt-8 pt-4 sm:pt-6 border-t border-gray-200 dark:border-gray-700">
+              <h4 className="text-xs sm:text-sm font-semibold text-gray-900 dark:text-white mb-3 sm:mb-4 flex items-center gap-2">
+                <svg className="w-3 h-3 sm:w-4 sm:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
+                </svg>
+                Tarjetas de Prueba
+              </h4>
+              <div className="space-y-2 text-xs sm:text-sm">
+                <div className="flex flex-col sm:flex-row justify-between sm:items-center gap-1 sm:gap-0 py-2 px-2 sm:px-3 bg-gray-50 dark:bg-gray-900 rounded-lg">
+                  <span className="text-gray-600 dark:text-gray-400">Exitoso:</span>
+                  <code className="text-gray-900 dark:text-white font-mono text-xs">4242 4242 4242 4242</code>
+                </div>
+                <div className="flex flex-col sm:flex-row justify-between sm:items-center gap-1 sm:gap-0 py-2 px-2 sm:px-3 bg-gray-50 dark:bg-gray-900 rounded-lg">
+                  <span className="text-gray-600 dark:text-gray-400">Rechazado:</span>
+                  <code className="text-gray-900 dark:text-white font-mono text-xs">4000 0000 0000 0002</code>
+                </div>
+                <div className="flex flex-col sm:flex-row justify-between sm:items-center gap-1 sm:gap-0 py-2 px-2 sm:px-3 bg-gray-50 dark:bg-gray-900 rounded-lg">
+                  <span className="text-gray-600 dark:text-gray-400">3DS:</span>
+                  <code className="text-gray-900 dark:text-white font-mono text-xs">4000 0027 6000 3184</code>
+                </div>
+              </div>
+              <p className="text-xs text-gray-500 dark:text-gray-500 mt-2 sm:mt-3">
+                Usa cualquier fecha futura y CVV de 3 dígitos
+              </p>
             </div>
-            <p className="text-gray-500 dark:text-gray-400 font-medium mb-2">
-              Esperando transacción
-            </p>
-            <p className="text-sm text-gray-400 dark:text-gray-500">
-              Completa el formulario y haz clic en pagar
-            </p>
+            </div>
           </div>
         )}
-
-        {/* Test Cards Info */}
-        <div className="mt-8 pt-6 border-t border-gray-200 dark:border-gray-700">
-          <h4 className="text-sm font-semibold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
-            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
-            </svg>
-            Tarjetas de Prueba
-          </h4>
-          <div className="space-y-2 text-sm">
-            <div className="flex justify-between items-center py-2 px-3 bg-gray-50 dark:bg-gray-900 rounded-lg">
-              <span className="text-gray-600 dark:text-gray-400">Exitoso:</span>
-              <code className="text-gray-900 dark:text-white font-mono text-xs">4242 4242 4242 4242</code>
-            </div>
-            <div className="flex justify-between items-center py-2 px-3 bg-gray-50 dark:bg-gray-900 rounded-lg">
-              <span className="text-gray-600 dark:text-gray-400">Rechazado:</span>
-              <code className="text-gray-900 dark:text-white font-mono text-xs">4000 0000 0000 0002</code>
-            </div>
-            <div className="flex justify-between items-center py-2 px-3 bg-gray-50 dark:bg-gray-900 rounded-lg">
-              <span className="text-gray-600 dark:text-gray-400">3DS:</span>
-              <code className="text-gray-900 dark:text-white font-mono text-xs">4000 0027 6000 3184</code>
-            </div>
-          </div>
-          <p className="text-xs text-gray-500 dark:text-gray-500 mt-3">
-            Usa cualquier fecha futura y CVV de 3 dígitos
-          </p>
-        </div>
       </div>
     </div>
   )

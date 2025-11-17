@@ -3,7 +3,7 @@
  * Main card input component with validation
  */
 
-import React, { useState, useCallback, useEffect } from 'react'
+import React, { useState, useCallback, useEffect, useMemo } from 'react'
 import {
   validateCardNumber,
   validateExpiry,
@@ -17,7 +17,7 @@ import {
   parseExpiry,
 } from '@deonpay/elements-core'
 import { CardBrandIcon } from './CardBrandIcon'
-import type { PaymentCardState, ElementChangeEvent } from '../types'
+import type { PaymentCardState, ElementChangeEvent, Appearance } from '../types'
 
 interface PaymentCardProps {
   onChange?: (event: ElementChangeEvent) => void
@@ -26,14 +26,28 @@ interface PaymentCardProps {
     showCardholderName?: boolean
     hidePostalCode?: boolean
   }
+  appearance?: Appearance
 }
 
 export const PaymentCard: React.FC<PaymentCardProps> = ({
   onChange,
   onReady,
   options = {},
+  appearance,
 }) => {
   const { showCardholderName = true } = options
+
+  // Convert appearance variables to inline styles
+  const containerStyle = useMemo(() => {
+    if (!appearance?.variables) return {}
+
+    const style: Record<string, string> = {}
+    Object.entries(appearance.variables).forEach(([key, value]) => {
+      const cssVar = `--dp-${key.replace(/([A-Z])/g, '-$1').toLowerCase()}`
+      style[cssVar] = value
+    })
+    return style
+  }, [appearance])
 
   const [state, setState] = useState<PaymentCardState>({
     cardNumber: '',
@@ -231,12 +245,12 @@ export const PaymentCard: React.FC<PaymentCardProps> = ({
   }, [showCardholderName])
 
   return (
-    <div className="deonpay-payment-card">
-      {/* Card Number */}
-      <div className="deonpay-form-group">
-        <label htmlFor="deonpay-card-number" className="deonpay-label">
-          Número de tarjeta
-        </label>
+    <div className="deonpay-payment-card" style={containerStyle as React.CSSProperties}>
+        {/* Card Number */}
+        <div className="deonpay-form-group">
+          <label htmlFor="deonpay-card-number" className="deonpay-label">
+            Número de tarjeta
+          </label>
         <div className="deonpay-input-wrapper">
           <input
             id="deonpay-card-number"

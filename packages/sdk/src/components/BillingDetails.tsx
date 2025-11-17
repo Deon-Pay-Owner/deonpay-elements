@@ -3,12 +3,27 @@
  * Collects billing information for payment processing
  */
 
-import React, { useState, useCallback, useEffect } from 'react'
-import type { BillingDetailsState, ElementChangeEvent } from '../types'
+import React, { useState, useCallback, useEffect, useMemo } from 'react'
+import type { BillingDetailsState, ElementChangeEvent, Appearance } from '../types'
+
+// Mexico postal code cache for fallback
+const MEXICO_POSTAL_CODES_CACHE: Record<string, { city: string; state: string }> = {
+  '01000': { city: 'Ciudad de México', state: 'CDMX' },
+  '03100': { city: 'Ciudad de México', state: 'CDMX' },
+  '06600': { city: 'Ciudad de México', state: 'CDMX' },
+  '64000': { city: 'Monterrey', state: 'Nuevo León' },
+  '44100': { city: 'Guadalajara', state: 'Jalisco' },
+  '20000': { city: 'Aguascalientes', state: 'Aguascalientes' },
+  '76000': { city: 'Querétaro', state: 'Querétaro' },
+  '78000': { city: 'San Luis Potosí', state: 'San Luis Potosí' },
+  '80000': { city: 'Culiacán', state: 'Sinaloa' },
+  '97000': { city: 'Mérida', state: 'Yucatán' },
+}
 
 interface BillingDetailsProps {
   onChange?: (event: ElementChangeEvent) => void
   onReady?: () => void
+  appearance?: Appearance
   options?: {
     fields?: {
       name?: 'auto' | 'never'
@@ -42,9 +57,22 @@ interface BillingDetailsProps {
 export const BillingDetails: React.FC<BillingDetailsProps> = ({
   onChange,
   onReady,
+  appearance,
   options = {},
 }) => {
   const { fields = {}, defaultValues = {} } = options
+
+  // Convert appearance variables to inline styles
+  const containerStyle = useMemo(() => {
+    if (!appearance?.variables) return {}
+
+    const style: Record<string, string> = {}
+    Object.entries(appearance.variables).forEach(([key, value]) => {
+      const cssVar = `--dp-${key.replace(/([A-Z])/g, '-$1').toLowerCase()}`
+      style[cssVar] = value
+    })
+    return style
+  }, [appearance])
 
   const [state, setState] = useState<BillingDetailsState>({
     name: defaultValues.name || '',
@@ -74,6 +102,9 @@ export const BillingDetails: React.FC<BillingDetailsProps> = ({
     },
     isComplete: false,
   })
+
+  const [postalCodeLoading, setPostalCodeLoading] = useState(false)
+  const [postalCodeFound, setPostalCodeFound] = useState(false)
 
   // Field visibility
   const showName = fields.name !== 'never'
@@ -110,6 +141,88 @@ export const BillingDetails: React.FC<BillingDetailsProps> = ({
   useEffect(() => {
     onReady?.()
   }, [onReady])
+
+  // Postal code lookup function using SEPOMEX API
+  const lookupPostalCode = useCallback(async (postalCode: string) => {
+    if (postalCode.length === 5 && /^\d+$/.test(postalCode)) {
+      setPostalCodeLoading(true)
+      setPostalCodeFound(false)
+
+      try {
+        // Use SEPOMEX API with 3 second timeout
+        const controller = new AbortController()
+        const timeoutId = setTimeout(() => controller.abort(), 3000)
+
+        const response = await fetch(
+          `https://api-sepomex.hckdrk.mx/query/get_copomex_info?type=codigo_postal&codigo_postal=${postalCode}`,
+          { signal: controller.signal }
+        )
+        clearTimeout(timeoutId)
+
+        if (response.ok) {
+          const data = await response.json()
+
+          // SEPOMEX API returns array of results, we take the first one
+          if (data && data.length > 0) {
+            const location = data[0]
+            setState((prev) => ({
+              ...prev,
+              address: {
+                ...prev.address,
+                city: location.response.municipio || location.response.ciudad || '',
+                state: location.response.estado || '',
+                country: 'MX',
+              },
+            }))
+            setPostalCodeFound(true)
+          } else {
+            // Fallback to cache if API returns no data
+            const cachedLocation = MEXICO_POSTAL_CODES_CACHE[postalCode]
+            if (cachedLocation) {
+              setState((prev) => ({
+                ...prev,
+                address: {
+                  ...prev.address,
+                  city: cachedLocation.city,
+                  state: cachedLocation.state,
+                  country: 'MX',
+                },
+              }))
+              setPostalCodeFound(true)
+            }
+          }
+        }
+      } catch (error) {
+        // If API fails (timeout or error), use cache as fallback
+        const cachedLocation = MEXICO_POSTAL_CODES_CACHE[postalCode]
+        if (cachedLocation) {
+          setState((prev) => ({
+            ...prev,
+            address: {
+              ...prev.address,
+              city: cachedLocation.city,
+              state: cachedLocation.state,
+              country: 'MX',
+            },
+          }))
+          setPostalCodeFound(true)
+        }
+      } finally {
+        setPostalCodeLoading(false)
+      }
+    } else {
+      setPostalCodeFound(false)
+    }
+  }, [])
+
+  // Auto-trigger postal code lookup when it changes
+  useEffect(() => {
+    if (state.address.postal_code && state.address.postal_code.length === 5) {
+      lookupPostalCode(state.address.postal_code)
+    } else {
+      setPostalCodeFound(false)
+    }
+  }, [state.address.postal_code, lookupPostalCode])
 
   const handleChange = useCallback((field: string, value: string) => {
     setState((prev) => {
@@ -187,13 +300,13 @@ export const BillingDetails: React.FC<BillingDetailsProps> = ({
   }, [])
 
   return (
-    <div className="deonpay-billing-details">
-      {/* Name */}
-      {showName && (
-        <div className="deonpay-form-group">
-          <label htmlFor="deonpay-billing-name" className="deonpay-label">
-            Nombre completo
-          </label>
+    <div className="deonpay-billing-details" style={containerStyle as React.CSSProperties}>
+        {/* Name */}
+        {showName && (
+          <div className="deonpay-form-group">
+            <label htmlFor="deonpay-billing-name" className="deonpay-label">
+              Nombre completo
+            </label>
           <input
             id="deonpay-billing-name"
             type="text"
@@ -259,6 +372,104 @@ export const BillingDetails: React.FC<BillingDetailsProps> = ({
         <div className="deonpay-form-group">
           <label className="deonpay-label">Dirección</label>
 
+          {/* Postal Code First - With Auto-fill */}
+          {showPostalCode && (
+            <div className="deonpay-form-group">
+              <div className="deonpay-input-wrapper">
+                <input
+                  id="deonpay-billing-postal-code"
+                  type="text"
+                  className="deonpay-input"
+                  placeholder="Código postal (ej: 64000)"
+                  value={state.address.postal_code}
+                  onChange={(e) => handleChange('address.postal_code', e.target.value)}
+                  onBlur={() => handleBlur('address.postal_code')}
+                  autoComplete="postal-code"
+                  maxLength={5}
+                />
+                {postalCodeLoading && (
+                  <div className="deonpay-input-icon">
+                    <div className="deonpay-spinner" />
+                  </div>
+                )}
+                {postalCodeFound && !postalCodeLoading && (
+                  <div className="deonpay-input-icon">
+                    <svg className="w-4 h-4 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                    </svg>
+                  </div>
+                )}
+              </div>
+              {postalCodeFound && (
+                <p className="text-xs text-green-600 dark:text-green-400 mt-1">
+                  Dirección encontrada automáticamente
+                </p>
+              )}
+            </div>
+          )}
+
+          {/* City, State, Country Row - Better flex handling */}
+          {(showCity || showState || showCountry) && (
+            <div className="deonpay-form-group">
+              <div className="deonpay-row">
+                {showCity && (
+                  <div className="deonpay-col" style={{ flex: '1 1 45%', minWidth: '120px' }}>
+                    <input
+                      id="deonpay-billing-city"
+                      type="text"
+                      className={`deonpay-input ${state.errors['address.city'] && state.touched.address?.city ? 'error' : ''}`}
+                      placeholder="Ciudad"
+                      value={state.address.city}
+                      onChange={(e) => handleChange('address.city', e.target.value)}
+                      onBlur={() => handleBlur('address.city')}
+                      autoComplete="address-level2"
+                      readOnly={postalCodeFound}
+                    />
+                    {state.errors['address.city'] && state.touched.address?.city && (
+                      <span className="deonpay-error-message">{state.errors['address.city']}</span>
+                    )}
+                  </div>
+                )}
+
+                {showState && (
+                  <div className="deonpay-col" style={{ flex: '1 1 45%', minWidth: '120px' }}>
+                    <input
+                      id="deonpay-billing-state"
+                      type="text"
+                      className="deonpay-input"
+                      placeholder="Estado"
+                      value={state.address.state}
+                      onChange={(e) => handleChange('address.state', e.target.value)}
+                      onBlur={() => handleBlur('address.state')}
+                      autoComplete="address-level1"
+                      readOnly={postalCodeFound}
+                    />
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+
+          {/* Country - Full width if shown separately */}
+          {showCountry && (
+            <div className="deonpay-form-group">
+              <select
+                id="deonpay-billing-country"
+                className="deonpay-input"
+                value={state.address.country}
+                onChange={(e) => handleChange('address.country', e.target.value)}
+                onBlur={() => handleBlur('address.country')}
+                autoComplete="country"
+                disabled={postalCodeFound}
+              >
+                <option value="MX">México</option>
+                <option value="US">Estados Unidos</option>
+                <option value="CA">Canadá</option>
+              </select>
+            </div>
+          )}
+
+          {/* Street Address Lines */}
           {showAddressLine1 && (
             <div className="deonpay-form-group">
               <input
@@ -291,75 +502,6 @@ export const BillingDetails: React.FC<BillingDetailsProps> = ({
               />
             </div>
           )}
-
-          <div className="deonpay-row">
-            {showCity && (
-              <div className="deonpay-col">
-                <input
-                  id="deonpay-billing-city"
-                  type="text"
-                  className={`deonpay-input ${state.errors['address.city'] && state.touched.address?.city ? 'error' : ''}`}
-                  placeholder="Ciudad"
-                  value={state.address.city}
-                  onChange={(e) => handleChange('address.city', e.target.value)}
-                  onBlur={() => handleBlur('address.city')}
-                  autoComplete="address-level2"
-                />
-                {state.errors['address.city'] && state.touched.address?.city && (
-                  <span className="deonpay-error-message">{state.errors['address.city']}</span>
-                )}
-              </div>
-            )}
-
-            {showState && (
-              <div className="deonpay-col">
-                <input
-                  id="deonpay-billing-state"
-                  type="text"
-                  className="deonpay-input"
-                  placeholder="Estado"
-                  value={state.address.state}
-                  onChange={(e) => handleChange('address.state', e.target.value)}
-                  onBlur={() => handleBlur('address.state')}
-                  autoComplete="address-level1"
-                />
-              </div>
-            )}
-          </div>
-
-          <div className="deonpay-row">
-            {showPostalCode && (
-              <div className="deonpay-col">
-                <input
-                  id="deonpay-billing-postal-code"
-                  type="text"
-                  className="deonpay-input"
-                  placeholder="Código postal"
-                  value={state.address.postal_code}
-                  onChange={(e) => handleChange('address.postal_code', e.target.value)}
-                  onBlur={() => handleBlur('address.postal_code')}
-                  autoComplete="postal-code"
-                />
-              </div>
-            )}
-
-            {showCountry && (
-              <div className="deonpay-col">
-                <select
-                  id="deonpay-billing-country"
-                  className="deonpay-input"
-                  value={state.address.country}
-                  onChange={(e) => handleChange('address.country', e.target.value)}
-                  onBlur={() => handleBlur('address.country')}
-                  autoComplete="country"
-                >
-                  <option value="MX">México</option>
-                  <option value="US">Estados Unidos</option>
-                  <option value="CA">Canadá</option>
-                </select>
-              </div>
-            )}
-          </div>
         </div>
       )}
     </div>

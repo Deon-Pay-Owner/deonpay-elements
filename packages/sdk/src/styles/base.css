@@ -26,46 +26,131 @@
   --dp-transition: all 0.2s ease;
 }
 
-/* Theme: Flat - Moderno y minimalista con colores vibrantes */
+/* Theme: Flat - Modern and minimal with vibrant colors */
 .deonpay-elements[data-theme="flat"] {
-  --dp-border-radius: 12px;
-  --dp-color-primary: #6366f1; /* Indigo vibrante */
-  --dp-color-background: #f8fafc; /* Fondo claro y limpio */
+  --dp-color-primary: #6366f1; /* Indigo vibrante (can be overridden) */
+  --dp-color-background: #ffffff; /* Clean white (can be overridden) */
   --dp-color-text: #0f172a;
+  --dp-color-text-secondary: #475569;
+  --dp-color-text-placeholder: #94a3b8;
   --dp-color-border: #e2e8f0;
-  --dp-color-focus-border: #6366f1;
+  --dp-color-focus-border: var(--dp-color-primary);
+  --dp-border-radius: 12px; /* Can be overridden */
+  --dp-border-width: 1px;
+  --dp-font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+  --dp-font-size: 15px;
+  --dp-font-size-label: 14px;
+  --dp-input-bg: #ffffff;
+  --dp-input-border: #e2e8f0;
+  --dp-label-weight: 500;
+  --dp-label-transform: none;
+  --dp-shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  --dp-shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
 }
 
-/* Theme: Classic - Profesional con gradientes sutiles */
+.deonpay-elements[data-theme="flat"] .deonpay-input {
+  background-color: var(--dp-input-bg);
+  border: 1px solid var(--dp-input-border);
+  box-shadow: var(--dp-shadow-sm);
+}
+
+.deonpay-elements[data-theme="flat"] .deonpay-input:focus {
+  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1), var(--dp-shadow-sm);
+}
+
+/* Theme: Classic - Professional with structured design */
 .deonpay-elements[data-theme="classic"] {
-  --dp-color-primary: #8b5cf6; /* Púrpura elegante */
-  --dp-color-background: #faf5ff; /* Fondo con tinte púrpura */
+  --dp-color-primary: #8b5cf6; /* Purple elegant (can be overridden) */
+  --dp-color-background: #fafafa; /* Soft gray (can be overridden) */
   --dp-color-text: #1e1b4b;
-  --dp-color-border: #ddd6fe;
-  --dp-color-focus-border: #8b5cf6;
-  --dp-border-radius: 8px;
+  --dp-color-text-secondary: #64748b;
+  --dp-color-text-placeholder: #94a3b8;
+  --dp-color-border: #d4d4d8;
+  --dp-color-focus-border: var(--dp-color-primary);
+  --dp-border-radius: 6px; /* Can be overridden */
+  --dp-border-width: 2px;
+  --dp-font-family: 'Georgia', 'Times New Roman', serif;
+  --dp-font-size: 15px;
+  --dp-font-size-label: 12px;
+  --dp-input-bg: #ffffff;
+  --dp-input-border: #d4d4d8;
+  --dp-label-weight: 700;
+  --dp-label-transform: uppercase;
+  --dp-label-spacing: 0.5px;
 }
 
-/* Theme: Dark - Oscuro con acentos cyan brillantes */
+.deonpay-elements[data-theme="classic"] .deonpay-input {
+  background-color: var(--dp-input-bg);
+  border: var(--dp-border-width) solid var(--dp-input-border);
+  font-weight: 500;
+}
+
+.deonpay-elements[data-theme="classic"] .deonpay-input:focus {
+  box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.12);
+  border-width: 2px;
+}
+
+/* Classic theme label styles are now handled by CSS variables */
+
+/* Theme: Dark - Sleek dark mode with cyan accents */
 .deonpay-elements[data-theme="dark"] {
-  --dp-color-background: #0f172a; /* Azul oscuro profundo */
+  --dp-color-background: #0f172a; /* Deep slate (can be overridden) */
   --dp-color-text: #f1f5f9;
   --dp-color-text-secondary: #cbd5e1;
   --dp-color-text-placeholder: #64748b;
-  --dp-color-border: #334155;
-  --dp-color-primary: #06b6d4; /* Cyan brillante */
-  --dp-color-focus-border: #06b6d4;
-  --dp-border-radius: 10px;
+  --dp-color-border: #1e293b;
+  --dp-color-primary: #06b6d4; /* Cyan bright (can be overridden) */
+  --dp-color-focus-border: var(--dp-color-primary);
+  --dp-border-radius: 16px; /* Can be overridden */
+  --dp-border-width: 1px;
+  --dp-font-family: 'Poppins', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --dp-font-size: 14px;
+  --dp-font-size-label: 13px;
+  --dp-input-bg: #1e293b;
+  --dp-input-border: #334155;
+  --dp-label-weight: 500;
+  --dp-label-transform: none;
+  --dp-label-spacing: 0.3px;
+  --dp-shadow-glow: 0 0 0 1px rgba(6, 182, 212, 0.1);
 }
 
-/* Payment Card Container */
+.deonpay-elements[data-theme="dark"] .deonpay-input {
+  background-color: var(--dp-input-bg);
+  border: 1px solid var(--dp-input-border);
+  box-shadow: var(--dp-shadow-glow);
+}
+
+.deonpay-elements[data-theme="dark"] .deonpay-input:focus {
+  box-shadow: 0 0 0 3px rgba(6, 182, 212, 0.15), var(--dp-shadow-glow);
+  border-color: rgba(6, 182, 212, 0.5);
+}
+
+/* Dark theme label styles are now handled by CSS variables */
+
+/* Payment Card - Main element wrapper */
 .deonpay-payment-card {
-  font-family: var(--dp-font-family);
-  font-size: var(--dp-font-size);
-  color: var(--dp-color-text);
   background-color: var(--dp-color-background);
   padding: calc(var(--dp-spacing-unit) * 3);
   border-radius: var(--dp-border-radius);
+  box-shadow: var(--dp-shadow-sm, 0 1px 3px 0 rgba(0, 0, 0, 0.1));
+  transition: var(--dp-transition);
+  font-family: var(--dp-font-family);
+  font-size: var(--dp-font-size);
+  color: var(--dp-color-text);
+}
+
+/* Theme-specific shadows */
+.deonpay-elements[data-theme="flat"] .deonpay-payment-card {
+  box-shadow: var(--dp-shadow-md);
+}
+
+.deonpay-elements[data-theme="classic"] .deonpay-payment-card {
+  box-shadow: 0 2px 8px 0 rgba(0, 0, 0, 0.1);
+  border: 1px solid var(--dp-color-border);
+}
+
+.deonpay-elements[data-theme="dark"] .deonpay-payment-card {
+  box-shadow: var(--dp-shadow-glow), 0 4px 12px 0 rgba(0, 0, 0, 0.3);
 }
 
 /* Form Group */
@@ -73,13 +158,30 @@
   margin-bottom: calc(var(--dp-spacing-unit) * 2);
 }
 
-/* Label */
+/* Label - Dynamic contrast based on background */
 .deonpay-label {
   display: block;
   margin-bottom: var(--dp-spacing-unit);
-  font-size: var(--dp-font-size-label);
-  font-weight: var(--dp-font-weight-medium);
+  font-family: var(--dp-font-family);
+  font-size: var(--dp-font-size-label, 14px);
+  font-weight: var(--dp-label-weight, 500);
+  text-transform: var(--dp-label-transform, none);
+  letter-spacing: var(--dp-label-spacing, normal);
   color: var(--dp-color-text);
+}
+
+/* Ensure labels have high contrast - calculated dynamically */
+.deonpay-elements[data-theme="dark"] .deonpay-label {
+  color: #f1f5f9;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+}
+
+.deonpay-elements[data-theme="flat"] .deonpay-label {
+  color: #0f172a;
+}
+
+.deonpay-elements[data-theme="classic"] .deonpay-label {
+  color: #1e1b4b;
 }
 
 /* Input Base */
@@ -89,8 +191,8 @@
   font-family: var(--dp-font-family);
   font-size: var(--dp-font-size);
   color: var(--dp-color-text);
-  background-color: var(--dp-color-background);
-  border: var(--dp-border-width) solid var(--dp-color-border);
+  background-color: var(--dp-input-bg, var(--dp-color-background));
+  border: var(--dp-border-width, 1px) solid var(--dp-input-border, var(--dp-color-border));
   border-radius: var(--dp-border-radius);
   outline: none;
   transition: var(--dp-transition);
@@ -114,10 +216,17 @@
   box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.1);
 }
 
-.deonpay-input:disabled {
+.deonpay-input:disabled,
+.deonpay-input:read-only {
   background-color: #f5f5f5;
   cursor: not-allowed;
-  opacity: 0.6;
+  opacity: 0.7;
+}
+
+.deonpay-elements[data-theme="dark"] .deonpay-input:disabled,
+.deonpay-elements[data-theme="dark"] .deonpay-input:read-only {
+  background-color: #1a2332;
+  opacity: 0.8;
 }
 
 /* Input with Icon */
@@ -144,18 +253,41 @@
   padding-right: calc(var(--dp-spacing-unit) * 6);
 }
 
-/* Row Layout */
+/* Row Layout - Improved flex handling to prevent overlap */
 .deonpay-row {
   display: flex;
   gap: calc(var(--dp-spacing-unit) * 2);
+  flex-wrap: wrap;
+  width: 100%;
 }
 
 .deonpay-col {
-  flex: 1;
+  flex: 1 1 0;
+  min-width: 0;
+  max-width: 100%;
 }
 
 .deonpay-col-auto {
   flex: 0 0 auto;
+}
+
+/* Ensure inputs don't overflow their containers */
+.deonpay-col > .deonpay-input,
+.deonpay-col > .deonpay-input-wrapper {
+  width: 100%;
+  box-sizing: border-box;
+}
+
+/* Responsive: stack on very small screens */
+@media (max-width: 400px) {
+  .deonpay-row {
+    flex-direction: column;
+  }
+
+  .deonpay-col {
+    width: 100%;
+    flex: 1 1 100%;
+  }
 }
 
 /* Error Message */
@@ -192,3 +324,106 @@
   outline: 2px solid var(--dp-color-focus-border);
   outline-offset: 2px;
 }
+
+/* Billing Details - Main element wrapper */
+.deonpay-billing-details {
+  background-color: var(--dp-color-background);
+  padding: calc(var(--dp-spacing-unit) * 3);
+  border-radius: var(--dp-border-radius);
+  box-shadow: var(--dp-shadow-sm, 0 1px 3px 0 rgba(0, 0, 0, 0.1));
+  transition: var(--dp-transition);
+  font-family: var(--dp-font-family);
+  font-size: var(--dp-font-size);
+  color: var(--dp-color-text);
+}
+
+/* Theme-specific shadows */
+.deonpay-elements[data-theme="flat"] .deonpay-billing-details {
+  box-shadow: var(--dp-shadow-md);
+}
+
+.deonpay-elements[data-theme="classic"] .deonpay-billing-details {
+  box-shadow: 0 2px 8px 0 rgba(0, 0, 0, 0.1);
+  border: 1px solid var(--dp-color-border);
+}
+
+.deonpay-elements[data-theme="dark"] .deonpay-billing-details {
+  box-shadow: var(--dp-shadow-glow), 0 4px 12px 0 rgba(0, 0, 0, 0.3);
+}
+
+.deonpay-billing-details .deonpay-form-group {
+  margin-bottom: calc(var(--dp-spacing-unit) * 2);
+}
+
+.deonpay-billing-details .deonpay-label {
+  display: block;
+  margin-bottom: var(--dp-spacing-unit);
+  font-family: var(--dp-font-family);
+  font-size: var(--dp-font-size-label, 14px);
+  font-weight: var(--dp-label-weight, 500);
+  text-transform: var(--dp-label-transform, none);
+  letter-spacing: var(--dp-label-spacing, normal);
+  color: var(--dp-color-text);
+}
+
+.deonpay-billing-details .deonpay-input {
+  width: 100%;
+  padding: calc(var(--dp-spacing-unit) * 1.5);
+  font-family: var(--dp-font-family);
+  font-size: var(--dp-font-size);
+  color: var(--dp-color-text);
+  background-color: var(--dp-input-bg, var(--dp-color-background));
+  border: var(--dp-border-width, 1px) solid var(--dp-input-border, var(--dp-color-border));
+  border-radius: var(--dp-border-radius);
+  outline: none;
+  transition: var(--dp-transition);
+  box-sizing: border-box;
+}
+
+.deonpay-billing-details .deonpay-input::placeholder {
+  color: var(--dp-color-text-placeholder);
+}
+
+.deonpay-billing-details .deonpay-input:focus {
+  border-color: var(--dp-color-focus-border);
+  box-shadow: 0 0 0 3px rgba(0, 112, 243, 0.1);
+}
+
+.deonpay-billing-details .deonpay-input.error {
+  border-color: var(--dp-color-error-border);
+}
+
+.deonpay-billing-details .deonpay-row {
+  display: flex;
+  gap: calc(var(--dp-spacing-unit) * 2);
+  margin-bottom: 0;
+  flex-wrap: wrap;
+}
+
+.deonpay-billing-details .deonpay-col {
+  flex: 1 1 0;
+  min-width: 0;
+}
+
+.deonpay-billing-details .deonpay-error-message {
+  display: block;
+  margin-top: var(--dp-spacing-unit);
+  font-size: 12px;
+  color: var(--dp-color-danger);
+}
+
+/* Select elements should also use border radius */
+.deonpay-input:is(select) {
+  cursor: pointer;
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23666' d='M10.293 3.293L6 7.586 1.707 3.293A1 1 0 00.293 4.707l5 5a1 1 0 001.414 0l5-5a1 1 0 10-1.414-1.414z'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right calc(var(--dp-spacing-unit) * 1.5) center;
+  padding-right: calc(var(--dp-spacing-unit) * 4);
+}
+
+.deonpay-elements[data-theme="dark"] .deonpay-input:is(select) {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23cbd5e1' d='M10.293 3.293L6 7.586 1.707 3.293A1 1 0 00.293 4.707l5 5a1 1 0 001.414 0l5-5a1 1 0 10-1.414-1.414z'/%3E%3C/svg%3E");
+}
+
+/* Legacy support - keeping for backwards compatibility but containers handle this now */

@@ -18,6 +18,10 @@ interface ThemeConfig {
   displayName: string
   description: string
   primaryColor: string
+  backgroundColor: string
+  borderRadius: number
+  fontSize: number
+  fontFamily: string
 }
 
 interface ButtonConfig {
@@ -29,24 +33,37 @@ interface ButtonConfig {
   text?: string
 }
 
+// Complete theme presets with all default values matching the SDK base.css
 const themes: ThemeConfig[] = [
   {
     name: 'flat',
     displayName: 'Flat',
-    description: 'Diseño moderno y minimalista con colores vibrantes',
-    primaryColor: '#6366f1' // Indigo vibrante
+    description: 'Diseño moderno y minimalista - fondo blanco, bordes suaves, fuente Inter, esquinas redondeadas',
+    primaryColor: '#6366f1', // Indigo vibrante
+    backgroundColor: '#ffffff', // Clean white
+    borderRadius: 12, // Smooth rounded corners
+    fontSize: 15, // Modern readable size
+    fontFamily: "'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif"
   },
   {
     name: 'classic',
     displayName: 'Classic',
-    description: 'Estilo profesional con gradientes sutiles',
-    primaryColor: '#8b5cf6' // Púrpura elegante
+    description: 'Estilo profesional corporativo - fondo gris claro, bordes definidos, fuente Georgia serif, etiquetas mayúsculas',
+    primaryColor: '#8b5cf6', // Púrpura elegante
+    backgroundColor: '#fafafa', // Soft gray background
+    borderRadius: 6, // Defined corners
+    fontSize: 15, // Professional size
+    fontFamily: "'Georgia', 'Times New Roman', serif"
   },
   {
     name: 'dark',
     displayName: 'Dark',
-    description: 'Modo oscuro elegante con acentos brillantes',
-    primaryColor: '#06b6d4' // Cyan brillante
+    description: 'Modo oscuro elegante - fondo slate oscuro, sombras luminosas, fuente Poppins, esquinas muy redondeadas',
+    primaryColor: '#06b6d4', // Cyan brillante
+    backgroundColor: '#0f172a', // Deep slate
+    borderRadius: 16, // Very rounded corners
+    fontSize: 14, // Compact elegant size
+    fontFamily: "'Poppins', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif"
   }
 ]
 
@@ -57,6 +74,7 @@ export function DemoSection() {
   const [fontSize, setFontSize] = useState(14)
   const [fontFamily, setFontFamily] = useState('-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, sans-serif')
   const [showCode, setShowCode] = useState(false)
+  const [backgroundColor, setBackgroundColor] = useState('#ffffff')
 
   // API Keys state
   const [publicKey, setPublicKey] = useState('pk_test_demo_key')
@@ -88,11 +106,15 @@ export function DemoSection() {
     if (savedSecretKey) setSecretKey(savedSecretKey)
   }, [])
 
-  // Update color when theme changes
+  // Auto-load ALL theme configuration when theme changes
   useEffect(() => {
     const theme = themes.find(t => t.name === selectedTheme)
     if (theme) {
       setCustomColor(theme.primaryColor)
+      setBackgroundColor(theme.backgroundColor)
+      setBorderRadius(theme.borderRadius)
+      setFontSize(theme.fontSize)
+      setFontFamily(theme.fontFamily)
     }
   }, [selectedTheme])
 
@@ -150,248 +172,91 @@ form.addEventListener('submit', async (event) => {
 })`
 
   return (
-    <div id="demo" className="max-w-7xl mx-auto px-4 py-12">
-      {/* Section Header */}
-      <div className="text-center mb-12">
-        <h2 className="text-4xl font-bold text-gray-900 dark:text-white mb-4">
-          Playground de Pagos en Vivo
-        </h2>
-        <p className="text-lg text-gray-600 dark:text-gray-400 max-w-3xl mx-auto">
-          Construye y prueba tu formulario de pago con transacciones reales.
-          Arrastra elementos, configura el monto y procesa pagos que aparecerán en tu dashboard.
-        </p>
-      </div>
-
-      {/* API Keys Configuration */}
-      <div className="mb-12">
-        <ApiKeysConfig
-          publicKey={publicKey}
-          secretKey={secretKey}
-          onPublicKeyChange={setPublicKey}
-          onSecretKeyChange={setSecretKey}
-          onSave={handleSaveKeys}
-        />
-      </div>
-
-      {/* Validation Warnings */}
-      {validation.warnings.length > 0 && (
-        <div className="mb-8 space-y-4">
-          {validation.warnings.map((warning, idx) => (
-            <ValidationBanner key={idx} type="warning" message={warning} />
-          ))}
-        </div>
-      )}
-
-      {validation.errors.length > 0 && (
-        <div className="mb-8 space-y-4">
-          {validation.errors.map((error, idx) => (
-            <ValidationBanner key={idx} type="error" message={error} />
-          ))}
-        </div>
-      )}
-
-      {/* Live Payment Builder - The main unified interface */}
-      <div className="mb-12">
-        <LivePaymentBuilder
-          key={keysVersion} // Re-mount when keys change
-          publicKey={publicKey}
-          secretKey={secretKey}
-          theme={selectedTheme}
-          customColor={customColor}
-          borderRadius={borderRadius}
-          fontSize={fontSize}
-          fontFamily={fontFamily}
-          buttonConfig={buttonConfig}
-          onElementsChange={setFormElements}
-          showValidationWarning={validation.requiresBillingElement && validation.hasPaymentElement && !validation.hasBillingElement}
-        />
-      </div>
-
-      {/* Theme Selection */}
-      <div className="mb-12">
-        <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-6 text-center">
-          Personaliza el Tema
-        </h3>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          {themes.map((theme) => (
-            <ThemeCard
-              key={theme.name}
-              name={theme.name}
-              displayName={theme.displayName}
-              description={theme.description}
-              isSelected={selectedTheme === theme.name}
-              onSelect={() => setSelectedTheme(theme.name)}
-              preview={
-                <div className="space-y-3">
-                  <div className={`h-10 rounded-md ${
-                    theme.name === 'dark' ? 'bg-gray-800 border border-gray-600' : 'bg-white border border-gray-300'
-                  }`} />
-                  <div className="flex gap-2">
-                    <div className={`h-10 flex-1 rounded-md ${
-                      theme.name === 'dark' ? 'bg-gray-800 border border-gray-600' : 'bg-white border border-gray-300'
-                    }`} />
-                    <div className={`h-10 w-20 rounded-md ${
-                      theme.name === 'dark' ? 'bg-gray-800 border border-gray-600' : 'bg-white border border-gray-300'
-                    }`} />
-                  </div>
-                  <button
-                    className={`w-full h-10 rounded-md font-semibold text-white`}
-                    style={{ backgroundColor: theme.primaryColor }}
-                  >
-                    Pagar
-                  </button>
-                </div>
-              }
-            />
-          ))}
-        </div>
-      </div>
-
-      {/* Customization Panel */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-12">
-        {/* Theme Customization */}
-        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 border border-gray-200 dark:border-gray-700">
-          <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-6">
-            Personalización del Tema
-          </h3>
-          <div className="space-y-6">
-            <ColorPicker
-              label="Color Primario"
-              value={customColor}
-              onChange={setCustomColor}
-            />
-
-            <FontPicker
-              value={fontFamily}
-              onChange={setFontFamily}
-            />
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                <svg className="w-4 h-4 inline-block mr-2 -mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                </svg>
-                Border Radius: {borderRadius}px
-              </label>
-              <input
-                type="range"
-                min="0"
-                max="20"
-                value={borderRadius}
-                onChange={(e) => setBorderRadius(Number(e.target.value))}
-                className="w-full h-2 bg-gray-200 dark:bg-gray-700 rounded-lg appearance-none cursor-pointer accent-blue-600"
-              />
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                <svg className="w-4 h-4 inline-block mr-2 -mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4" />
-                </svg>
-                Font Size: {fontSize}px
-              </label>
-              <input
-                type="range"
-                min="12"
-                max="18"
-                value={fontSize}
-                onChange={(e) => setFontSize(Number(e.target.value))}
-                className="w-full h-2 bg-gray-200 dark:bg-gray-700 rounded-lg appearance-none cursor-pointer accent-blue-600"
-              />
-            </div>
+    <div id="demo" className="w-full h-screen flex flex-col overflow-hidden">
+      {/* Compact Header - Mobile Responsive */}
+      <div className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 px-4 sm:px-6 py-3 sm:py-4">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 max-w-full">
+          <div className="flex-1">
+            <h2 className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white">
+              Playground de Pagos
+            </h2>
+            <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-400 mt-1">
+              Construye y prueba tu checkout con transacciones reales
+            </p>
           </div>
-        </div>
-
-        {/* Button Customization */}
-        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 border border-gray-200 dark:border-gray-700">
-          <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-6">
-            Personalización del Botón
-          </h3>
-          <div className="space-y-6">
-            <ColorPicker
-              label="Color del Texto"
-              value={buttonConfig.textColor || '#ffffff'}
-              onChange={(color) => setButtonConfig({ ...buttonConfig, textColor: color })}
-            />
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                Tamaño de Fuente: {buttonConfig.fontSize}px
-              </label>
-              <input
-                type="range"
-                min="12"
-                max="24"
-                value={buttonConfig.fontSize}
-                onChange={(e) => setButtonConfig({ ...buttonConfig, fontSize: Number(e.target.value) })}
-                className="w-full h-2 bg-gray-200 dark:bg-gray-700 rounded-lg appearance-none cursor-pointer accent-blue-600"
-              />
-            </div>
-
-            {/* Button Preview */}
-            <div className="pt-4 border-t border-gray-200 dark:border-gray-700">
-              <p className="text-xs text-gray-500 dark:text-gray-400 mb-3">Vista Previa:</p>
-              <button
-                className="w-full font-semibold py-3 px-6 shadow-lg flex items-center justify-center gap-2"
-                style={{
-                  backgroundColor: customColor,
-                  color: buttonConfig.textColor,
-                  fontSize: `${buttonConfig.fontSize}px`,
-                  borderRadius: `${borderRadius}px`,
-                }}
-              >
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
-                </svg>
-                Pagar $100.00 MXN
-              </button>
-            </div>
-          </div>
-
-          <div className="mt-6 pt-6 border-t border-gray-200 dark:border-gray-700">
+          <div className="flex items-center gap-2 sm:gap-3 w-full sm:w-auto">
             <button
               onClick={() => setShowCode(!showCode)}
-              className="w-full px-4 py-3 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white rounded-lg font-semibold shadow-lg hover:shadow-xl transition-all"
+              className="flex-1 sm:flex-none px-3 sm:px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium text-xs sm:text-sm shadow transition-all"
             >
-              {showCode ? 'Ocultar Código' : 'Ver Código de Integración'}
+              {showCode ? 'Ocultar Código' : 'Ver Código'}
             </button>
           </div>
         </div>
-      </div>
 
-      {/* Generated Code */}
-      {showCode && (
-        <div className="mb-12 animate-fade-in">
-          <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">
-            Código de Integración
-          </h3>
-          <CodeBlock
-            code={generatedCode}
-            language="typescript"
-            title="Configuración de DeonPay Elements"
+        {/* API Keys - Compact inline */}
+        <div className="mt-3">
+          <ApiKeysConfig
+            publicKey={publicKey}
+            secretKey={secretKey}
+            onPublicKeyChange={setPublicKey}
+            onSecretKeyChange={setSecretKey}
+            onSave={handleSaveKeys}
           />
         </div>
-      )}
 
-      {/* Info Box */}
-      <div className="mt-12 p-6 bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 rounded-xl border border-blue-200 dark:border-blue-800">
-        <div className="flex items-start gap-4">
-          <svg className="w-6 h-6 text-blue-600 dark:text-blue-400 flex-shrink-0 mt-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-          </svg>
-          <div className="text-sm text-blue-900 dark:text-blue-200">
-            <p className="font-semibold mb-2">Cómo usar este playground:</p>
-            <ol className="space-y-1 list-decimal list-inside">
-              <li>Configura tus API Keys (PK y SK)</li>
-              <li>Arrastra el "Elemento de Pago" al formulario</li>
-              <li>Opcionalmente agrega "Detalles de Facturación" (requerido para CyberSource)</li>
-              <li>Ajusta el monto a cobrar en el campo superior</li>
-              <li>Llena los datos de la tarjeta</li>
-              <li>Haz clic en el botón de pagar</li>
-              <li>¡La transacción aparecerá en tu dashboard!</li>
-            </ol>
+        {/* Validation Messages */}
+        {(validation.warnings.length > 0 || validation.errors.length > 0) && (
+          <div className="mt-3 space-y-2">
+            {validation.warnings.map((warning, idx) => (
+              <ValidationBanner key={idx} type="warning" message={warning} />
+            ))}
+            {validation.errors.map((error, idx) => (
+              <ValidationBanner key={idx} type="error" message={error} />
+            ))}
           </div>
-        </div>
+        )}
+      </div>
+
+      {/* Main Content - No scroll needed */}
+      <div className="flex-1 overflow-hidden">
+        {showCode ? (
+          <div className="h-full overflow-auto p-6 bg-gray-50 dark:bg-gray-900">
+            <div className="max-w-5xl mx-auto">
+              <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-4">
+                Código de Integración
+              </h3>
+              <CodeBlock
+                code={generatedCode}
+                language="typescript"
+                title="Configuración de DeonPay Elements"
+              />
+            </div>
+          </div>
+        ) : (
+          <LivePaymentBuilder
+            key={keysVersion}
+            publicKey={publicKey}
+            secretKey={secretKey}
+            theme={selectedTheme}
+            customColor={customColor}
+            borderRadius={borderRadius}
+            fontSize={fontSize}
+            fontFamily={fontFamily}
+            buttonConfig={buttonConfig}
+            backgroundColor={backgroundColor}
+            onElementsChange={setFormElements}
+            showValidationWarning={validation.requiresBillingElement && validation.hasPaymentElement && !validation.hasBillingElement}
+            onThemeChange={setSelectedTheme}
+            onColorChange={setCustomColor}
+            onBorderRadiusChange={setBorderRadius}
+            onFontSizeChange={setFontSize}
+            onFontFamilyChange={setFontFamily}
+            onButtonConfigChange={setButtonConfig}
+            onBackgroundColorChange={setBackgroundColor}
+            themes={themes}
+          />
+        )}
       </div>
     </div>
   )

@@ -122,7 +122,34 @@ export class DeonPay {
 
       // Handle requires_action (3DS)
       if (paymentIntent.status === 'requires_action' && paymentIntent.next_action) {
-        if (redirect === 'always' || redirect === 'if_required') {
+        if (redirect === 'if_required') {
+          // Use iframe for 3DS challenge
+          const redirectUrl = paymentIntent.next_action.redirect_to_url?.url
+          if (redirectUrl) {
+            try {
+              const authResult = await this.handle3DSChallenge(redirectUrl)
+
+              // Complete authentication with the backend
+              const completedPaymentIntent = await this.completeAuthentication(
+                paymentIntentId,
+                authResult.PaRes,
+                authResult.MD
+              )
+
+              return {
+                paymentIntent: completedPaymentIntent,
+              }
+            } catch (error: any) {
+              return {
+                error: {
+                  type: 'authentication_error',
+                  message: error.message || '3DS authentication failed',
+                },
+              }
+            }
+          }
+        } else if (redirect === 'always') {
+          // Full page redirect for 3DS
           const redirectUrl = paymentIntent.next_action.redirect_to_url?.url
           if (redirectUrl) {
             window.location.href = redirectUrl
@@ -192,6 +219,167 @@ export class DeonPay {
       throw new Error('Invalid client secret format')
     }
     return parts[0]
+  }
+
+  /**
+   * Handle 3DS challenge in an iframe/popup
+   * @param redirectUrl - 3DS challenge URL
+   * @returns Authentication result with PaRes and MD
+   */
+  private async handle3DSChallenge(
+    redirectUrl: string
+  ): Promise<{ PaRes: string; MD?: string }> {
+    return new Promise((resolve, reject) => {
+      // Create modal overlay
+      const overlay = document.createElement('div')
+      overlay.style.cssText = `
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.5);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 999999;
+      `
+
+      // Create iframe container
+      const container = document.createElement('div')
+      container.style.cssText = `
+        background: white;
+        border-radius: 8px;
+        padding: 20px;
+        max-width: 500px;
+        width: 90%;
+        max-height: 90vh;
+        overflow: hidden;
+        position: relative;
+      `
+
+      // Create close button
+      const closeBtn = document.createElement('button')
+      closeBtn.textContent = '×'
+      closeBtn.style.cssText = `
+        position: absolute;
+        top: 10px;
+        right: 10px;
+        background: none;
+        border: none;
+        font-size: 24px;
+        cursor: pointer;
+        color: #666;
+        z-index: 1;
+      `
+      closeBtn.onclick = () => {
+        document.body.removeChild(overlay)
+        reject(new Error('3DS authentication cancelled by user'))
+      }
+
+      // Create iframe for 3DS
+      const iframe = document.createElement('iframe')
+      iframe.src = redirectUrl
+      iframe.style.cssText = `
+        width: 100%;
+        height: 500px;
+        border: none;
+        border-radius: 4px;
+      `
+
+      // Listen for postMessage from 3DS iframe
+      const messageHandler = (event: MessageEvent) => {
+        // Validate origin if possible
+        if (event.data && event.data.type === '3ds_complete') {
+          window.removeEventListener('message', messageHandler)
+          document.body.removeChild(overlay)
+
+          resolve({
+            PaRes: event.data.PaRes,
+            MD: event.data.MD,
+          })
+        }
+      }
+
+      window.addEventListener('message', messageHandler)
+
+      // Also listen for iframe navigation (for non-postMessage flows)
+      // This is a fallback - ideally the 3DS page should postMessage
+      iframe.addEventListener('load', () => {
+        try {
+          // Try to read the iframe content (won't work for cross-origin)
+          const iframeDoc = iframe.contentDocument || iframe.contentWindow?.document
+          if (iframeDoc) {
+            // Look for form with PaRes
+            const paResInput = iframeDoc.querySelector('input[name="PaRes"]') as HTMLInputElement
+            const mdInput = iframeDoc.querySelector('input[name="MD"]') as HTMLInputElement
+
+            if (paResInput && paResInput.value) {
+              window.removeEventListener('message', messageHandler)
+              document.body.removeChild(overlay)
+
+              resolve({
+                PaRes: paResInput.value,
+                MD: mdInput?.value,
+              })
+            }
+          }
+        } catch (e) {
+          // Cross-origin iframe, can't read content
+          // Rely on postMessage instead
+        }
+      })
+
+      // Assemble and add to DOM
+      container.appendChild(closeBtn)
+      container.appendChild(iframe)
+      overlay.appendChild(container)
+      document.body.appendChild(overlay)
+
+      // Timeout after 5 minutes
+      setTimeout(() => {
+        if (document.body.contains(overlay)) {
+          window.removeEventListener('message', messageHandler)
+          document.body.removeChild(overlay)
+          reject(new Error('3DS authentication timed out'))
+        }
+      }, 5 * 60 * 1000)
+    })
+  }
+
+  /**
+   * Complete authentication with the backend
+   * @param paymentIntentId - Payment intent ID
+   * @param paRes - PaRes from 3DS
+   * @param md - MD from 3DS
+   * @returns Updated payment intent
+   */
+  private async completeAuthentication(
+    paymentIntentId: string,
+    paRes: string,
+    md?: string
+  ): Promise<PaymentIntent> {
+    const url = `${this.config.apiUrl}/api/v1/payment_intents/${paymentIntentId}/complete_authentication`
+
+    const response = await fetch(url, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${this.publicKey}`,
+      },
+      body: JSON.stringify({
+        authentication_result: paRes,
+        MD: md,
+      }),
+    })
+
+    const data = await response.json()
+
+    if (!response.ok) {
+      throw new Error(data.error?.message || 'Failed to complete authentication')
+    }
+
+    return data
   }
 
   /**
