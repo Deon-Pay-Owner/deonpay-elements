@@ -12,6 +12,7 @@
   "scripts": {
     "dev": "vite build --watch",
     "build": "vite build && tsc --emitDeclarationOnly",
+    "build:browser": "vite build --config vite.config.browser.ts",
     "test": "vitest",
     "typecheck": "tsc --noEmit",
     "lint": "eslint src --ext ts,tsx --report-unused-disable-directives --max-warnings 0"
