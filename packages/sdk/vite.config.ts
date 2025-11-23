@@ -14,17 +14,25 @@ export default defineConfig({
     lib: {
       entry: resolve(__dirname, 'src/index.ts'),
       name: 'DeonPayElements',
-      formats: ['es', 'cjs'],
-      fileName: (format) => `index.${format === 'es' ? 'mjs' : 'js'}`,
+      formats: ['es', 'cjs', 'umd'],
+      fileName: (format) => {
+        if (format === 'es') return 'index.mjs'
+        if (format === 'umd') return 'deonpay-elements.js'
+        return 'index.js'
+      },
     },
     rollupOptions: {
-      external: ['react', 'react-dom', 'react-dom/client', 'react/jsx-runtime'],
+      external: (id) => {
+        // For UMD build, we need to bundle React, but for es/cjs we want it external
+        const isReactDep = ['react', 'react-dom', 'react-dom/client', 'react/jsx-runtime'].includes(id)
+        return isReactDep // Will be external for all formats, UMD will use globals
+      },
       output: {
         globals: {
           react: 'React',
           'react-dom': 'ReactDOM',
           'react-dom/client': 'ReactDOM',
-          'react/jsx-runtime': 'react/jsx-runtime',
+          'react/jsx-runtime': 'ReactJSXRuntime',
         },
       },
     },
