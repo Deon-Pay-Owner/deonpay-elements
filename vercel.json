@@ -1,5 +1,5 @@
 {
-  "buildCommand": "pnpm --filter @deonpay/elements-core build && pnpm --filter @deonpay/elements-sdk build && pnpm --filter @deonpay/elements-sdk build:browser && pnpm --filter @deonpay/playground build && mkdir -p apps/playground/public/sdk && cp apps/elements/public/sdk/* apps/playground/public/sdk/",
+  "buildCommand": "bash build-vercel.sh",
   "outputDirectory": "apps/playground/.next",
   "env": {
     "NEXT_PUBLIC_DEONPAY_API_URL": "https://api.deonpay.mx"
