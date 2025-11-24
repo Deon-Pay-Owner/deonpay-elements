@@ -1,5 +1,5 @@
 {
-  "buildCommand": "pnpm --filter @deonpay/elements-sdk build:browser",
+  "buildCommand": "pnpm --filter @deonpay/elements-core build && pnpm --filter @deonpay/elements-sdk build:browser",
   "outputDirectory": "apps/elements/public",
   "env": {
     "NEXT_PUBLIC_DEONPAY_API_URL": "https://api.deonpay.mx"
