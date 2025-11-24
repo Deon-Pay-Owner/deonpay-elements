@@ -207,6 +207,9 @@ export class PaymentElement implements ElementInstance {
       })
     }
 
+    // Clear container before creating root to prevent React errors
+    this.container.innerHTML = ''
+
     // Create React root and render
     this.root = createRoot(this.container)
     this.root.render(
@@ -380,6 +383,9 @@ export class BillingElement implements ElementInstance {
         this.container!.style.setProperty(cssVar, value)
       })
     }
+
+    // Clear container before creating root to prevent React errors
+    this.container.innerHTML = ''
 
     // Create React root and render
     this.root = createRoot(this.container)
