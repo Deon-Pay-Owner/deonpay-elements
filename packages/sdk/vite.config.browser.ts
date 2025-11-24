@@ -7,7 +7,7 @@ export default defineConfig({
   plugins: [react()],
   build: {
     lib: {
-      entry: resolve(__dirname, 'src/index.ts'),
+      entry: resolve(__dirname, 'src/browser.ts'),
       name: 'DeonPay',
       formats: ['iife'],
       fileName: () => 'deonpay-elements-v1.js',
