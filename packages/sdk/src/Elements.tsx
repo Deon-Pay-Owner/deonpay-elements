@@ -191,6 +191,16 @@ export class PaymentElement implements ElementInstance {
       return
     }
 
+    // If there's already a root mounted, unmount it first to prevent conflicts
+    if (this.root) {
+      try {
+        this.root.unmount()
+      } catch (e) {
+        console.warn('Failed to unmount existing root:', e)
+      }
+      this.root = null
+    }
+
     // Apply theme to container
     this.container.classList.add('deonpay-elements')
     const theme = this.elements.getAppearance().theme
@@ -207,21 +217,26 @@ export class PaymentElement implements ElementInstance {
       })
     }
 
-    // Clear container before creating root to prevent React errors
-    this.container.innerHTML = ''
+    // Use setTimeout to ensure DOM is ready and prevent race conditions
+    setTimeout(() => {
+      if (!this.container) return
 
-    // Create React root and render
-    this.root = createRoot(this.container)
-    this.root.render(
-      <PaymentCard
-        onChange={(e: ElementChangeEvent) => this.emit('change', e)}
-        onReady={() => this.emit('ready', {})}
-        options={{
-          showCardholderName: this.options.fields?.billingDetails !== 'never',
-        }}
-        appearance={this.elements.getAppearance()}
-      />
-    )
+      // Clear container before creating root to prevent React errors
+      this.container.innerHTML = ''
+
+      // Create React root and render
+      this.root = createRoot(this.container)
+      this.root.render(
+        <PaymentCard
+          onChange={(e: ElementChangeEvent) => this.emit('change', e)}
+          onReady={() => this.emit('ready', {})}
+          options={{
+            showCardholderName: this.options.fields?.billingDetails !== 'never',
+          }}
+          appearance={this.elements.getAppearance()}
+        />
+      )
+    }, 0)
   }
 
   /**
@@ -368,6 +383,16 @@ export class BillingElement implements ElementInstance {
       return
     }
 
+    // If there's already a root mounted, unmount it first to prevent conflicts
+    if (this.root) {
+      try {
+        this.root.unmount()
+      } catch (e) {
+        console.warn('Failed to unmount existing root:', e)
+      }
+      this.root = null
+    }
+
     // Apply theme to container
     this.container.classList.add('deonpay-elements')
     const theme = this.elements.getAppearance().theme
@@ -384,19 +409,24 @@ export class BillingElement implements ElementInstance {
       })
     }
 
-    // Clear container before creating root to prevent React errors
-    this.container.innerHTML = ''
+    // Use setTimeout to ensure DOM is ready and prevent race conditions
+    setTimeout(() => {
+      if (!this.container) return
 
-    // Create React root and render
-    this.root = createRoot(this.container)
-    this.root.render(
-      <BillingDetails
-        onChange={(e: ElementChangeEvent) => this.emit('change', e)}
-        onReady={() => this.emit('ready', {})}
-        options={this.options}
-        appearance={this.elements.getAppearance()}
-      />
-    )
+      // Clear container before creating root to prevent React errors
+      this.container.innerHTML = ''
+
+      // Create React root and render
+      this.root = createRoot(this.container)
+      this.root.render(
+        <BillingDetails
+          onChange={(e: ElementChangeEvent) => this.emit('change', e)}
+          onReady={() => this.emit('ready', {})}
+          options={this.options}
+          appearance={this.elements.getAppearance()}
+        />
+      )
+    }, 0)
   }
 
   /**
